@@ -624,8 +624,8 @@ body.is-loading .reveal{opacity:0}
         <p class="hero-lede reveal" style="--d:.12s">
           First year Computer Science student in the <strong>Honors College</strong> at
           <strong>Stony Brook University</strong>. Before this I taught beginner programming
-          on Long Island and served as <strong>president</strong> of my high school
-          chamber orchestra.
+          on Long Island and played <strong>violin</strong> in my high school chamber
+          orchestra, where I served as president.
         </p>
         <div class="btn-row reveal" style="--d:.18s">
           <button class="btn btn-primary" type="button" id="copyMail" data-mail="lukejz2308@gmail.com">
@@ -787,7 +787,7 @@ body.is-loading .reveal{opacity:0}
           </div>
           <div class="act-titles">
             <div class="act-role">President, Chamber Orchestra</div>
-            <div class="act-org">Mount Sinai High School &middot; Member, grades 9 to 12</div>
+            <div class="act-org">Mount Sinai High School &middot; Violin &middot; Member, grades 9 to 12</div>
           </div>
           <div class="act-meta">Senior Year</div>
         </div>
@@ -1611,10 +1611,17 @@ body.is-loading .reveal{opacity:0}
   function spellTime(ms){
     var s = Math.max(1, Math.round(ms / 1000));
     if (s < 60) return s + (s === 1 ? ' second' : ' seconds');
-    var m = Math.floor(s / 60), rest = s % 60;
-    var out = m + (m === 1 ? ' minute' : ' minutes');
-    if (m < 10 && rest) out += ' ' + rest + (rest === 1 ? ' second' : ' seconds');
-    return out;
+    var m = Math.floor(s / 60);
+    if (m < 60){
+      var rest = s % 60;
+      var out = m + (m === 1 ? ' minute' : ' minutes');
+      if (m < 10 && rest) out += ' ' + rest + (rest === 1 ? ' second' : ' seconds');
+      return out;
+    }
+    var h = Math.floor(m / 60), mr = m % 60;
+    var hs = h + (h === 1 ? ' hour' : ' hours');
+    if (mr) hs += ' ' + mr + (mr === 1 ? ' minute' : ' minutes');
+    return hs;
   }
 
   function showTimeNote(){
@@ -1623,10 +1630,15 @@ body.is-loading .reveal{opacity:0}
     var ms = performance.now() - readStart;
     var spelled = spellTime(ms);
     var line;
-    if (ms < 60000){
-      line = 'You reached the bottom in <b>' + spelled + '</b>. That was a skim, ' +
-             'which is fair. The short version: computer science at Stony Brook, ' +
-             'and a lot of orchestra before that.';
+    if (ms < 2000){
+      line = 'You reached the bottom in <b>' + spelled + '</b>. Did the website even ' +
+             'load in yet? Well, if you are seeing this, I guess it did.';
+    } else if (ms < 10000){
+      line = 'You reached the bottom in <b>' + spelled + '</b>. You could at least ' +
+             'skim the text. It is not that much, I promise.';
+    } else if (ms < 60000){
+      line = 'You reached the bottom in <b>' + spelled + '</b>. So that was a skim. ' +
+             'Be honest, how much of it do you actually remember?';
     } else if (ms < 900000){
       line = 'You reached the bottom in <b>' + spelled + '</b>. Thanks for actually ' +
              'reading it. The button up top copies my email if you want to use it.';
