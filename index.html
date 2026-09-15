@@ -257,10 +257,24 @@ section{padding:clamp(72px,11vw,128px) 0;position:relative}
 
 .icon-badge{
   width:42px;height:42px;border-radius:12px;flex:none;display:grid;place-items:center;
-  background:linear-gradient(140deg,rgba(111,143,255,.18),rgba(176,124,255,.1));
-  border:1px solid rgba(111,143,255,.22);
+  background:linear-gradient(140deg,rgba(var(--c,111 143 255),.2),rgba(var(--c,111 143 255),.07));
+  border:1px solid rgba(var(--c,111 143 255),.28);
 }
-.icon-badge svg{width:19px;height:19px;stroke:var(--accent);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.icon-badge svg{width:19px;height:19px;stroke:rgb(var(--c,111 143 255));fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+/* one hue per activity, so the four cards are told apart at a glance */
+.a-music{--c:180,132,255}
+.a-code{--c:120,150,255}
+.a-robot{--c:86,214,190}
+.a-teach{--c:236,170,116}
+.a-music .act-role,.a-code .act-role,.a-robot .act-role,.a-teach .act-role{color:var(--text)}
+.act-list .card::after{
+  content:'';position:absolute;left:0;top:22px;bottom:22px;width:2px;border-radius:0 2px 2px 0;
+  background:linear-gradient(180deg,rgba(var(--c,111 143 255),.85),rgba(var(--c,111 143 255),0));
+}
+.a-music .bullets li::before{background:rgb(180,132,255)}
+.a-code .bullets li::before{background:rgb(120,150,255)}
+.a-robot .bullets li::before{background:rgb(86,214,190)}
+.a-teach .bullets li::before{background:rgb(236,170,116)}
 
 .badge-now{
   display:inline-flex;align-items:center;gap:6px;
@@ -297,29 +311,47 @@ section{padding:clamp(72px,11vw,128px) 0;position:relative}
   font-family:var(--font-mono);font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;
   color:var(--muted);padding-bottom:18px;margin-bottom:4px;border-bottom:1px solid var(--border);
 }
-.course-group{padding:18px 0;border-top:1px solid var(--border)}
+/* each subject carries its own hue so the coursework reads as four groups
+   instead of one undifferentiated block */
+.course-group{padding:20px 0;border-top:1px solid var(--border);--c:120,150,255}
 .course-group:first-of-type{border-top:none;padding-top:14px}
 .course-group:last-child{padding-bottom:0}
+.g-cs{--c:120,150,255}
+.g-math{--c:180,132,255}
+.g-sci{--c:86,214,190}
+.g-hum{--c:236,170,116}
+
 .course-label{
+  display:flex;align-items:center;gap:10px;
   font-family:var(--font-mono);font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;
-  color:var(--muted-dim);margin-bottom:11px;
+  color:rgba(var(--c),.95);margin-bottom:13px;
 }
+.course-label::before{
+  content:'';width:16px;height:2px;border-radius:2px;flex:none;
+  background:rgb(var(--c));box-shadow:0 0 8px rgba(var(--c),.55);
+}
+.course-label b{margin-left:auto;font-weight:400;color:var(--muted-dim);letter-spacing:.1em}
+
 .tags{display:flex;flex-wrap:wrap;gap:8px}
 .tag{
   display:inline-flex;align-items:center;
-  font-size:.79rem;color:var(--muted);padding:6px 14px;border-radius:99px;
-  border:1px solid rgba(255,255,255,.085);
-  background:var(--chip);box-shadow:var(--hi),var(--lift);
+  font-size:.79rem;padding:6px 14px;border-radius:99px;
+  color:rgba(var(--c),.78);
+  border:1px solid rgba(var(--c),.2);
+  background:rgba(var(--c),.05);
   transition:.25s var(--ease);
 }
 .tag:hover{
-  color:var(--text);border-color:rgba(111,143,255,.5);
-  background:var(--chip-hot);transform:translateY(-1px);
+  color:rgb(var(--c));border-color:rgba(var(--c),.55);
+  background:rgba(var(--c),.13);transform:translateY(-1px);
 }
-.tag.is-key{color:#cfd9ff;border-color:rgba(111,143,255,.3);background:var(--chip-hot)}
+.tag.is-key{
+  color:rgba(var(--c),1);font-weight:500;
+  border-color:rgba(var(--c),.42);background:rgba(var(--c),.11);
+}
 .tag.is-key::before{
   content:'';width:4px;height:4px;border-radius:50%;margin-right:8px;flex:none;
-  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  background:rgb(var(--c));box-shadow:0 0 6px rgba(var(--c),.8);
 }
 
 /* ============ ACTIVITIES ============ */
@@ -345,21 +377,28 @@ section{padding:clamp(72px,11vw,128px) 0;position:relative}
 /* ============ AWARDS ============ */
 .awards{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px}
 .award{
+  position:relative;overflow:hidden;
   display:flex;align-items:center;gap:14px;padding:18px 20px;
   border:1px solid var(--border);border-radius:15px;
   background:var(--glass);box-shadow:var(--hi),var(--lift);
   backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
-  transition:.32s var(--ease);
+  transition:.32s var(--ease);--c:120,150,255;
 }
-.award:hover{border-color:rgba(111,143,255,.42);transform:translateY(-2px)}
-.award:hover .award-mark{border-color:rgba(111,143,255,.45)}
+.aw-music{--c:180,132,255}
+.aw-build{--c:86,214,190}
+.award::after{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:2px;
+  background:linear-gradient(180deg,rgba(var(--c),0),rgba(var(--c),.9),rgba(var(--c),0));
+}
+.award:hover{border-color:rgba(var(--c),.45);transform:translateY(-2px)}
+.award:hover .award-mark{border-color:rgba(var(--c),.5)}
 .award-mark{
   width:33px;height:33px;border-radius:10px;flex:none;display:grid;place-items:center;
-  border:1px solid rgba(255,255,255,.1);
-  background:linear-gradient(140deg,rgba(111,143,255,.16),rgba(176,124,255,.08));
+  border:1px solid rgba(var(--c),.25);
+  background:linear-gradient(140deg,rgba(var(--c),.18),rgba(var(--c),.06));
   transition:border-color .32s ease;
 }
-.award-mark svg{width:15px;height:15px;stroke:var(--accent);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.award-mark svg{width:15px;height:15px;stroke:rgb(var(--c));fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .award-name{font-size:.93rem;font-weight:500;line-height:1.4}
 .award-sub{font-family:var(--font-mono);font-size:.66rem;color:var(--muted-dim);letter-spacing:.06em;margin-top:2px}
 
@@ -634,8 +673,8 @@ body.is-loading .reveal{opacity:0}
 
       <div class="card reveal" style="--d:.12s">
         <div class="card-label">High School Coursework</div>
-        <div class="course-group">
-          <div class="course-label">Computer Science</div>
+        <div class="course-group g-cs">
+          <div class="course-label">Computer Science <b>06</b></div>
           <div class="tags">
             <span class="tag is-key">AP Computer Science A</span>
             <span class="tag is-key">AP Computer Science Principles</span>
@@ -645,23 +684,23 @@ body.is-loading .reveal{opacity:0}
             <span class="tag is-key">Data Science &middot; Stanford</span>
           </div>
         </div>
-        <div class="course-group">
-          <div class="course-label">Mathematics</div>
+        <div class="course-group g-math">
+          <div class="course-label">Mathematics <b>03</b></div>
           <div class="tags">
-            <span class="tag">AP Calculus BC</span>
+            <span class="tag is-key">AP Calculus BC</span>
             <span class="tag">AP Statistics</span>
             <span class="tag">Precalculus Honors</span>
           </div>
         </div>
-        <div class="course-group">
-          <div class="course-label">Science</div>
+        <div class="course-group g-sci">
+          <div class="course-label">Science <b>02</b></div>
           <div class="tags">
             <span class="tag">AP Physics I</span>
             <span class="tag">AP Physics II</span>
           </div>
         </div>
-        <div class="course-group">
-          <div class="course-label">Humanities</div>
+        <div class="course-group g-hum">
+          <div class="course-label">Humanities <b>06</b></div>
           <div class="tags">
             <span class="tag">AP World History I</span>
             <span class="tag">AP World History II</span>
@@ -685,7 +724,7 @@ body.is-loading .reveal{opacity:0}
     </div>
 
     <div class="act-list">
-      <article class="card reveal">
+      <article class="card reveal a-music">
         <div class="act-head">
           <div class="icon-badge">
             <svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
@@ -703,7 +742,7 @@ body.is-loading .reveal{opacity:0}
         </ul>
       </article>
 
-      <article class="card reveal" style="--d:.08s">
+      <article class="card reveal a-code" style="--d:.08s">
         <div class="act-head">
           <div class="icon-badge">
             <svg viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
@@ -720,7 +759,7 @@ body.is-loading .reveal{opacity:0}
         </ul>
       </article>
 
-      <article class="card reveal" style="--d:.16s">
+      <article class="card reveal a-robot" style="--d:.16s">
         <div class="act-head">
           <div class="icon-badge">
             <svg viewBox="0 0 24 24"><rect x="5" y="7" width="14" height="12" rx="2"/><path d="M9 7V4h6v3M9 12h.01M15 12h.01M9.5 16h5M2 12h3M19 12h3"/></svg>
@@ -738,7 +777,7 @@ body.is-loading .reveal{opacity:0}
         </ul>
       </article>
 
-      <article class="card reveal" style="--d:.24s">
+      <article class="card reveal a-teach" style="--d:.24s">
         <div class="act-head">
           <div class="icon-badge">
             <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -774,23 +813,23 @@ body.is-loading .reveal{opacity:0}
         <div class="award-mark"><svg viewBox="0 0 24 24"><path d="m12 2 2.9 6.3 6.6.8-4.9 4.6 1.3 6.6L12 17l-5.9 3.3 1.3-6.6L2.5 9.1l6.6-.8z"/></svg></div>
         <div><div class="award-name">National Honor Society</div><div class="award-sub">Member</div></div>
       </div>
-      <div class="award reveal" style="--d:.1s">
+      <div class="award reveal aw-music" style="--d:.1s">
         <div class="award-mark"><svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
         <div><div class="award-name">NYSSMA All State</div><div class="award-sub">Level 6 &middot; New York State School Music Association</div></div>
       </div>
-      <div class="award reveal" style="--d:.15s">
+      <div class="award reveal aw-music" style="--d:.15s">
         <div class="award-mark"><svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
         <div><div class="award-name">SCMEA</div><div class="award-sub">Suffolk County Music Educators&rsquo; Association</div></div>
       </div>
-      <div class="award reveal" style="--d:.2s">
+      <div class="award reveal aw-music" style="--d:.2s">
         <div class="award-mark"><svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
         <div><div class="award-name">LISFA</div><div class="award-sub">Long Island String Festival Association</div></div>
       </div>
-      <div class="award reveal" style="--d:.25s">
+      <div class="award reveal aw-music" style="--d:.25s">
         <div class="award-mark"><svg viewBox="0 0 24 24"><path d="m12 2 2.9 6.3 6.6.8-4.9 4.6 1.3 6.6L12 17l-5.9 3.3 1.3-6.6L2.5 9.1l6.6-.8z"/></svg></div>
         <div><div class="award-name">Tri-M Music Honor Society</div><div class="award-sub">Member</div></div>
       </div>
-      <div class="award reveal" style="--d:.3s">
+      <div class="award reveal aw-build" style="--d:.3s">
         <div class="award-mark"><svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div>
         <div><div class="award-name">Stony Brook University Hackathon Winner</div><div class="award-sub">Best Creative</div></div>
       </div>
@@ -956,8 +995,11 @@ body.is-loading .reveal{opacity:0}
      view on its own and the reader can scroll down to travel alongside it. */
   var lines = [];
   var TINTS = ['140,168,255', '176,124,255', '120,214,200'];
-  var LINE_COUNT = 44;
+  var LINE_COUNT = 26;
+  var BURST = 95;
+  var MAX_LINES = 150;
   var srcX = 0, srcDocY = 0;
+  var burstArmed = true;
 
   function readSource(){
     var cue = document.getElementById('scrollCue');
@@ -974,22 +1016,30 @@ body.is-loading .reveal{opacity:0}
      field keeps feeding no matter how far down the page the reader is. */
   function makeLine(atSource){
     var y = atSource
-      ? Math.max(srcDocY, window.pageYOffset - 140) + Math.random() * 60
+      ? Math.max(srcDocY, window.pageYOffset - 130) + Math.random() * 70
       : window.pageYOffset + Math.random() * vh;
+    var vy = 2.6 + Math.random() * 4.8;
     return {
-      x: srcX + (Math.random() - 0.5) * 120,
+      x: srcX + (Math.random() - 0.5) * 150,
       y: y,
-      len: 20 + Math.random() * 58,
-      w: 0.6 + Math.random() * 0.7,
-      a: 0.16 + Math.random() * 0.2,
+      len: 16 + vy * 9 + Math.random() * 22,   /* faster strands streak longer */
+      w: 0.6 + Math.random() * 0.8,
+      a: 0.15 + Math.random() * 0.2,
       tint: TINTS[(Math.random() * TINTS.length) | 0],
-      vy: 0.5 + Math.random() * 1.45,
-      spread: (Math.random() - 0.5) * 0.9,
-      sway: 4 + Math.random() * 11,
+      vy: vy,
+      spread: (Math.random() - 0.5) * 1.6,
+      sway: 2 + Math.random() * 4.5,
       phase: Math.random() * Math.PI * 2,
       travel: 0,
-      range: 1500 + Math.random() * 2800
+      range: 2600 + Math.random() * 4400
     };
+  }
+
+  /* One surge as the cue goes by, rather than a thin trickle. Re-arms if the
+     reader scrolls back above it. */
+  function burstFromCue(){
+    for (var i = 0; i < BURST; i++) lines.push(makeLine(true));
+    if (lines.length > MAX_LINES) lines.splice(0, lines.length - MAX_LINES);
   }
 
   function seedRiver(){
@@ -1015,34 +1065,45 @@ body.is-loading .reveal{opacity:0}
 
     for (var i = 0; i < lines.length; i++){
       var p = lines[i];
+      var wander = Math.sin(t * 0.8 + p.phase) * p.sway * 0.08;
+      var vx = p.spread * 0.4 + wander;
+
       p.y += p.vy * k;
-      p.x += p.spread * k * 0.4;
+      p.x += vx * k;
       p.travel += p.vy * k;
 
-      if (p.travel > p.range){ lines[i] = makeLine(true); continue; }
+      if (p.travel > p.range){
+        if (lines.length > LINE_COUNT){ lines.splice(i, 1); } else { lines[i] = makeLine(true); }
+        continue;
+      }
 
       var sy = p.y - top;
-      if (sy > vh + 120 || sy + p.len < -120) continue;
+      if (sy > vh + 160 || sy + p.len < -160) continue;
 
-      var lean = Math.sin(t * 0.4 + p.phase + p.y * 0.0028) * p.sway;
       var mid = sy + p.len * 0.5;
       var fade = 1;
       if (mid < edge) fade = Math.max(0, mid / edge);
       else if (mid > vh - edge) fade = Math.max(0, (vh - mid) / edge);
       if (fade <= 0) continue;
 
+      /* each strand lies along its own velocity, so the field reads as pointed */
+      var mag = Math.sqrt(vx * vx + p.vy * p.vy) || 1;
       riverCtx.strokeStyle = 'rgba(' + p.tint + ',' + (p.a * fade).toFixed(3) + ')';
       riverCtx.lineWidth = p.w;
       riverCtx.beginPath();
-      riverCtx.moveTo(p.x + lean, sy);
-      riverCtx.lineTo(p.x - lean * 0.35, sy + p.len);
+      riverCtx.moveTo(p.x, sy);
+      riverCtx.lineTo(p.x + (vx / mag) * p.len, sy + (p.vy / mag) * p.len);
       riverCtx.stroke();
     }
   }
 
   function updateRiverGate(){
     readSource();
-    if (!riverCv.classList.contains('is-flowing')) riverCv.classList.add('is-flowing');
+    riverCv.classList.add('is-flowing');
+    var y = window.pageYOffset;
+    var trip = srcDocY - vh * 0.45;
+    if (burstArmed && y > trip){ burstArmed = false; burstFromCue(); }
+    else if (!burstArmed && y < trip - 150){ burstArmed = true; }
   }
 
   /* ---------- spacetime ----------
@@ -1060,23 +1121,27 @@ body.is-loading .reveal{opacity:0}
     out[1] = cy + dy * f;
   }
 
-  /* Lines far from the pointer are undisplaced, so they cost one segment each. */
+  /* The lattice runs well past the viewport, so a well near an edge pulls on
+     offscreen grid rather than dragging the visible border inward.
+     Lines far from the pointer are undisplaced and cost one segment each. */
   function traceGrid(ctx, cx, cy){
+    var over = GRID * 5;
+    var x0 = -over, x1 = vw + over, y0 = -over, y1 = vh + over;
     var near = WARP_D + GRID;
     var pt = [0, 0];
-    var g, i, steps = 90;
+    var g, i, steps = 110;
     ctx.beginPath();
-    for (g = 0; g <= vw + GRID; g += GRID){
-      if (Math.abs(g - cx) > near){ ctx.moveTo(g + 0.5, 0); ctx.lineTo(g + 0.5, vh); continue; }
+    for (g = x0; g <= x1; g += GRID){
+      if (Math.abs(g - cx) > near){ ctx.moveTo(g + 0.5, y0); ctx.lineTo(g + 0.5, y1); continue; }
       for (i = 0; i <= steps; i++){
-        warpPoint(g, (vh * i) / steps, cx, cy, pt);
+        warpPoint(g, y0 + ((y1 - y0) * i) / steps, cx, cy, pt);
         if (i === 0) ctx.moveTo(pt[0], pt[1]); else ctx.lineTo(pt[0], pt[1]);
       }
     }
-    for (g = 0; g <= vh + GRID; g += GRID){
-      if (Math.abs(g - cy) > near){ ctx.moveTo(0, g + 0.5); ctx.lineTo(vw, g + 0.5); continue; }
+    for (g = y0; g <= y1; g += GRID){
+      if (Math.abs(g - cy) > near){ ctx.moveTo(x0, g + 0.5); ctx.lineTo(x1, g + 0.5); continue; }
       for (i = 0; i <= steps; i++){
-        warpPoint((vw * i) / steps, g, cx, cy, pt);
+        warpPoint(x0 + ((x1 - x0) * i) / steps, g, cx, cy, pt);
         if (i === 0) ctx.moveTo(pt[0], pt[1]); else ctx.lineTo(pt[0], pt[1]);
       }
     }
