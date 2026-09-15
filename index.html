@@ -29,12 +29,11 @@
   --gutter:clamp(20px,5vw,48px);
   /* Surfaces stay near-opaque so the grid and the line field read as depth
      behind the page rather than as texture printed through the text. */
-  --glass:linear-gradient(180deg,rgba(24,28,40,.93),rgba(15,18,27,.95));
-  --chip:linear-gradient(180deg,rgba(32,37,53,.96),rgba(21,25,37,.96));
-  --chip-hot:linear-gradient(180deg,rgba(44,53,88,.97),rgba(26,32,53,.97));
+  --glass:linear-gradient(180deg,rgba(24,28,40,.975),rgba(15,18,27,.985));
+  --chip:linear-gradient(180deg,rgba(32,37,53,.98),rgba(21,25,37,.98));
+  --chip-hot:linear-gradient(180deg,rgba(44,53,88,.985),rgba(26,32,53,.985));
   --hi:inset 0 1px 0 rgba(255,255,255,.06);
   --lift:0 2px 10px -4px rgba(0,0,0,.65);
-  --blur:blur(11px) saturate(125%);
 }
 
 *{margin:0;padding:0;box-sizing:border-box}
@@ -87,6 +86,10 @@ body.cursor-live .bg-torch{opacity:1}
   opacity:0;transition:opacity .5s ease;
 }
 body.cursor-live .bg-warp{opacity:1}
+/* shed the costly layers where the machine cannot keep up */
+body.low-power .bg-warp{display:none}
+body.low-power .bg-noise{display:none}
+body.low-power .orb{filter:blur(55px);opacity:.38}
 
 /* ============ RIVER ============ */
 .river{
@@ -228,7 +231,6 @@ body.path footer{margin-top:44px}
   display:inline-flex;align-items:center;gap:9px;
   padding:7px 16px 7px 12px;border:1px solid var(--border);border-radius:99px;
   background:var(--chip);box-shadow:var(--hi),var(--lift);
-  backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
   font-family:var(--font-mono);font-size:.7rem;letter-spacing:.14em;
   text-transform:uppercase;color:var(--muted);margin-bottom:26px;
 }
@@ -256,14 +258,13 @@ body.path footer{margin-top:44px}
 .btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8}
 .btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#06070c;border-color:transparent;font-weight:600}
 .btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 34px -12px rgba(111,143,255,.7)}
-.btn-ghost{color:var(--text);background:var(--chip);box-shadow:var(--hi),var(--lift);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur)}
+.btn-ghost{color:var(--text);background:var(--chip);box-shadow:var(--hi),var(--lift)}
 .btn-ghost:hover{border-color:var(--border-bright);background:var(--chip-hot);transform:translateY(-2px)}
 
 .meta-row{display:flex;flex-wrap:wrap;gap:12px}
 .meta{
   border:1px solid var(--border);border-radius:13px;
   background:var(--chip);box-shadow:var(--hi),var(--lift);
-  backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
   padding:11px 17px;transition:.28s var(--ease);
 }
 .meta:hover{border-color:rgba(111,143,255,.4);transform:translateY(-2px)}
@@ -296,7 +297,6 @@ body.path footer{margin-top:44px}
 .card{
   position:relative;border:1px solid var(--border);border-radius:16px;
   background:var(--glass);
-  backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
   box-shadow:var(--hi),0 8px 30px -18px rgba(0,0,0,.9);
   padding:clamp(22px,3vw,30px);overflow:hidden;
   transition:border-color .35s ease,transform .35s var(--ease);
@@ -435,7 +435,6 @@ body.path footer{margin-top:44px}
   display:flex;align-items:center;gap:14px;padding:18px 20px;
   border:1px solid var(--border);border-radius:15px;
   background:var(--glass);box-shadow:var(--hi),var(--lift);
-  backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
   transition:.32s var(--ease);--c:120,150,255;
 }
 .aw-music{--c:180,132,255}
@@ -469,7 +468,6 @@ body.path footer{margin-top:44px}
   border:1px solid var(--border);border-radius:22px;
   padding:clamp(38px,6vw,68px) clamp(22px,4vw,48px);
   background:var(--glass);box-shadow:var(--hi),0 10px 40px -22px rgba(0,0,0,.95);
-  backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
 }
 .contact-card::after{
   content:'';position:absolute;top:-52%;left:50%;transform:translateX(-50%);
@@ -1036,6 +1034,7 @@ body.is-loading .reveal{opacity:0}
   var pathMode = false;
 
   function scrollPos(){ return pathMode ? pathY : window.pageYOffset; }
+  function scrollSide(){ return pathMode ? pathX : 0; }
 
   function usePath(){
     return window.matchMedia('(pointer: fine)').matches &&
@@ -1146,7 +1145,9 @@ body.is-loading .reveal{opacity:0}
   var vw = 0, vh = 0;
 
   function sizeCanvas(cv){
-    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    /* these layers are decorative hairlines; full retina costs 4x the fill for
+       no real gain, so cap the backing store */
+    var dpr = Math.min(window.devicePixelRatio || 1, 1.5);
     cv.width = Math.floor(vw * dpr);
     cv.height = Math.floor(vh * dpr);
     cv.style.width = vw + 'px';
@@ -1186,6 +1187,7 @@ body.is-loading .reveal{opacity:0}
   var srcX = 0, srcDocY = 0;
   var burstArmed = true;
   var pending = 0;
+  var lastCol = null;
 
   /* measured off the cue's hairline itself, so strands leave that exact stroke */
   function readSource(){
@@ -1197,9 +1199,18 @@ body.is-loading .reveal{opacity:0}
     if (el){
       var r = el.getBoundingClientRect();
       if (r.height) {
-        srcX = r.left + r.width / 2;
+        /* both axes in page space: the column of strands then belongs to the
+           spot it fell from, rather than tracking the viewport sideways */
+        srcX = r.left + r.width / 2 + scrollSide();
         srcDocY = r.bottom + scrollPos();
       }
+    }
+    /* Anchor the column to whichever panel the route is on. It holds still
+       within a column, so the stream never slides along with the viewport, and
+       it only shifts between columns, which happens off-screen mid-turn. */
+    if (pathMode && segs.length){
+      var pl = panels[segAt(pathPos).i];
+      if (pl) srcX = (parseFloat(pl.style.left) || 0) + vw / 2;
     }
   }
 
@@ -1262,6 +1273,7 @@ body.is-loading .reveal{opacity:0}
     emitPending(k);
 
     var top = scrollPos();
+    var left = scrollSide();
     var edge = vh * 0.14;
 
     for (var i = 0; i < lines.length; i++){
@@ -1285,6 +1297,16 @@ body.is-loading .reveal{opacity:0}
       }
 
       var sy = p.y - top;
+      var sx = p.x - left;
+
+      /* Carried off this column by a turn. Re-home it to the current column so
+         the new one fills; it is already out of sight, so nothing appears to
+         slide sideways. */
+      if (sx < -240 || sx > vw + 240){
+        if (lines.length > LINE_COUNT){ lines.splice(i, 1); i--; }
+        else lines[i] = makeLine(true);
+        continue;
+      }
       if (sy > vh + 160 || sy + len < -160) continue;
 
       /* Only the top edge is feathered. Strands are born at the cue near the
@@ -1303,8 +1325,8 @@ body.is-loading .reveal{opacity:0}
       riverCtx.strokeStyle = 'rgba(' + p.tint + ',' + (p.a * fade).toFixed(3) + ')';
       riverCtx.lineWidth = p.w;
       riverCtx.beginPath();
-      riverCtx.moveTo(p.x, sy);
-      riverCtx.lineTo(p.x + (vx / mag) * len, sy + (p.vy / mag) * len);
+      riverCtx.moveTo(sx, sy);
+      riverCtx.lineTo(sx + (vx / mag) * len, sy + (p.vy / mag) * len);
       riverCtx.stroke();
     }
   }
@@ -1316,12 +1338,41 @@ body.is-loading .reveal{opacity:0}
     var trip = srcDocY - vh * 0.45;
     if (burstArmed && y > trip){ burstArmed = false; burstFromCue(); }
     else if (!burstArmed && y < trip - 150){ burstArmed = true; }
+
+    /* arriving in a fresh column gets its own smaller influx, so the far side
+       of a turn is not left bare */
+    var col = Math.round(srcX);
+    if (lastCol !== null && col !== lastCol) pending += 45;
+    lastCol = col;
   }
 
   /* ---------- spacetime ----------
      Grid points near the pointer are pulled toward it, compressing the lattice
      the way mass curves a coordinate grid. The base grid itself is drawn through
      the same displacement, so there is one grid that bends, not two overlaid. */
+  /* Hardware varies a lot and the grid well is the costliest thing here, so
+     measure real frame times once the page is live and drop it if the machine
+     cannot hold a sensible rate. */
+  var lowPower = false, perfFrames = [], perfDone = false;
+
+  function watchPerf(dt){
+    if (perfDone || !opened) return;
+    if (dt > 250) return;                 /* ignore stalls from tab switches */
+    perfFrames.push(dt);
+    if (perfFrames.length < 100) return;
+    perfDone = true;
+    var sorted = perfFrames.slice().sort(function(a, b){ return a - b; });
+    var median = sorted[sorted.length >> 1];
+    if (median > 23){                     /* worse than roughly 43fps */
+      lowPower = true;
+      document.body.classList.add('low-power');
+      LINE_COUNT = 16;
+      if (lines.length > LINE_COUNT) lines.length = LINE_COUNT;
+      if (warpCtx) warpCtx.clearRect(0, 0, vw, vh);
+      drawGridLayers(-99999, -99999);     /* leave the lattice straight and static */
+    }
+  }
+
   var GRID = 72, WARP_R = 78, WARP_K = 0.62, WARP_D = 150;
   var lastWx = -99999, lastWy = -99999;
   var gridCx = -99999, gridCy = -99999;
@@ -1341,7 +1392,7 @@ body.is-loading .reveal{opacity:0}
     var x0 = -over, x1 = vw + over, y0 = -over, y1 = vh + over;
     var near = WARP_D + GRID;
     var pt = [0, 0];
-    var g, i, steps = 110;
+    var g, i, steps = 44;
     ctx.beginPath();
     for (g = x0; g <= x1; g += GRID){
       if (Math.abs(g - cx) > near){ ctx.moveTo(g + 0.5, y0); ctx.lineTo(g + 0.5, y1); continue; }
@@ -1395,14 +1446,17 @@ body.is-loading .reveal{opacity:0}
     glow.addColorStop(0, 'rgba(0,0,0,1)');
     glow.addColorStop(0.5, 'rgba(0,0,0,.75)');
     glow.addColorStop(1, 'rgba(0,0,0,0)');
+    /* destination-in erases everything the fill misses, so the box is enough
+       and costs a fraction of a full-viewport fill */
     warpCtx.globalCompositeOperation = 'destination-in';
     warpCtx.fillStyle = glow;
-    warpCtx.fillRect(0, 0, vw, vh);
+    warpCtx.fillRect(cx - WARP_D, cy - WARP_D, WARP_D * 2, WARP_D * 2);
     warpCtx.globalCompositeOperation = 'source-over';
   }
 
   function drawWarp(cx, cy){
-    if (Math.abs(cx - lastWx) < 0.3 && Math.abs(cy - lastWy) < 0.3) return;
+    if (lowPower) return;
+    if (Math.abs(cx - lastWx) < 0.8 && Math.abs(cy - lastWy) < 0.8) return;
     lastWx = cx; lastWy = cy;
     drawGridLayers(cx, cy);
   }
@@ -1537,6 +1591,7 @@ body.is-loading .reveal{opacity:0}
     (function tick(now){
       var dt = now - prev;
       prev = now;
+      watchPerf(dt);
       var k = Math.min(dt / 16.67, 3);
       pathFrame(k);
       /* IntersectionObserver lags behind a moving transform, so nudge the
