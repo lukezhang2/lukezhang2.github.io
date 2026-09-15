@@ -215,7 +215,9 @@ body.path{overflow:hidden;height:100vh}
    move. translate3d already composites; the off-screen panels are hidden
    instead, which keeps the painted area near one viewport. */
 body.path .world{position:fixed;top:0;left:0;width:100vw;height:100vh}
-body.path .panel{position:absolute;top:0;left:0;width:100vw}
+/* every panel fills at least a screen, so each turn starts from a panel that
+   reaches the fold; a shorter one would leave a band of nothing across the bend */
+body.path .panel{position:absolute;top:0;left:0;width:100vw;min-height:100vh}
 body.path .edu-col{position:static}
 body.path footer{margin-top:44px}
 .sec-head{display:flex;align-items:baseline;gap:16px;margin-bottom:44px;flex-wrap:wrap}
@@ -1033,8 +1035,10 @@ body.is-loading .reveal{opacity:0}
      travels upward. */
   var world = document.querySelector('.world');
   var panels = Array.prototype.slice.call(world.querySelectorAll('.panel'));
+  /* which way each turn leans while it descends; 'down' just carries straight on */
   var TURNS = ['down', 'right', 'down', 'left', 'down'];
-  var segs = [];
+  var pathPts = [], panelS = [];
+  var CURVE_STEPS = 30;
   var pathLen = 0, pathPos = 0, pathTarget = 0, pathX = 0, pathY = 0;
   var pathMode = false;
 
@@ -1047,12 +1051,26 @@ body.is-loading .reveal{opacity:0}
   }
 
   function buildPath(){
-    segs = []; pathLen = 0;
+    pathPts = []; panelS = []; pathLen = 0;
     if (!pathMode){
-      panels.forEach(function(p){ p.style.left = ''; p.style.top = ''; });
+      panels.forEach(function(p){
+        p.style.left = ''; p.style.top = ''; p.style.visibility = '';
+      });
       world.style.transform = '';
       return;
     }
+
+    function add(px, py, idx){
+      var n = pathPts.length, s = 0;
+      if (n){
+        var q = pathPts[n - 1];
+        var dx = px - q.x, dy = py - q.y;
+        s = q.s + Math.sqrt(dx * dx + dy * dy);
+      }
+      pathPts.push({ x: px, y: py, s: s, i: idx });
+      return s;
+    }
+
     var x = 0, y = 0;
     panels.forEach(function(p, i){
       p.style.left = x + 'px';
@@ -1060,42 +1078,64 @@ body.is-loading .reveal{opacity:0}
       p.style.visibility = '';
       p.panelH = p.offsetHeight;
       p.onScreen = true;
+
+      /* the run through a panel stays straight, so text never slides sideways
+         while it is being read; all the bend lives in the turns */
+      panelS[i] = add(x, y, i);
       var endY = y + Math.max(0, p.panelH - vh);
-      segs.push({ i: i, x0: x, y0: y, x1: x, y1: endY });
+      if (endY > y) add(x, endY, i);
+
       if (i < panels.length - 1){
         var dir = TURNS[Math.min(i, TURNS.length - 1)];
-        var nx = x, ny = endY;
-        if (dir === 'down') ny = endY + vh;
-        else if (dir === 'right') nx = x + vw;
-        else nx = x - vw;
-        segs.push({ i: i, x0: x, y0: endY, x1: nx, y1: ny, turn: true });
+        /* Less than a full viewport sideways: the two panels then overlap
+           across the bend, so the turn keeps content on screen instead of
+           sweeping through a half empty diagonal. */
+        var over = vw * 0.55;
+        var nx = x + (dir === 'right' ? over : dir === 'left' ? -over : 0);
+        var ny = endY + vh;
+        /* A cubic whose control points sit straight below the start and
+           straight above the end, so the curve leaves one panel heading down
+           and reaches the next heading down. Tangents match the straight runs
+           on both sides, which makes the whole route one continuous bend with
+           no corner anywhere. Every turn descends, so nothing ever backs up. */
+        var c1y = endY + vh * 0.42, c2y = endY + vh * 0.58;
+        for (var t = 1; t <= CURVE_STEPS; t++){
+          var u = t / CURVE_STEPS, m = 1 - u;
+          var m2 = m * m, u2 = u * u;
+          var bx = m2 * m * x + 3 * m2 * u * x + 3 * m * u2 * nx + u2 * u * nx;
+          var by = m2 * m * endY + 3 * m2 * u * c1y + 3 * m * u2 * c2y + u2 * u * ny;
+          add(bx, by, u < 0.5 ? i : i + 1);
+        }
         x = nx; y = ny;
       }
     });
-    segs.forEach(function(s){
-      s.start = pathLen;
-      s.len = Math.sqrt((s.x1 - s.x0) * (s.x1 - s.x0) + (s.y1 - s.y0) * (s.y1 - s.y0));
-      pathLen += s.len;
-    });
+
+    pathLen = pathPts.length ? pathPts[pathPts.length - 1].s : 0;
     pathTarget = Math.min(pathTarget, pathLen);
     pathPos = Math.min(pathPos, pathLen);
     applyPath();
   }
 
-  function segAt(s){
-    for (var i = 0; i < segs.length; i++){
-      if (s <= segs[i].start + segs[i].len) return segs[i];
+  /* the curve is stored as a walked polyline, so travel is even in distance
+     rather than racing through the bends */
+  function pointAt(s){
+    if (!pathPts.length) return { x: 0, y: 0, i: 0 };
+    s = Math.max(0, Math.min(pathLen, s));
+    var lo = 0, hi = pathPts.length - 1;
+    while (hi - lo > 1){
+      var mid = (lo + hi) >> 1;
+      if (pathPts[mid].s <= s) lo = mid; else hi = mid;
     }
-    return segs[segs.length - 1];
+    var a = pathPts[lo], b = pathPts[hi];
+    var d = b.s - a.s;
+    var t = d > 0 ? (s - a.s) / d : 0;
+    return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t, i: t < 0.5 ? a.i : b.i };
   }
 
   function applyPath(){
-    if (!pathMode || !segs.length) return;
-    var s = Math.max(0, Math.min(pathLen, pathPos));
-    var sg = segAt(s);
-    var t = sg.len ? (s - sg.start) / sg.len : 0;
-    pathX = sg.x0 + (sg.x1 - sg.x0) * t;
-    pathY = sg.y0 + (sg.y1 - sg.y0) * t;
+    if (!pathMode || !pathPts.length) return;
+    var pt = pointAt(pathPos);
+    pathX = pt.x; pathY = pt.y;
     world.style.transform = 'translate3d(' + (-pathX) + 'px,' + (-pathY) + 'px,0)';
     cullPanels();
   }
@@ -1119,10 +1159,7 @@ body.is-loading .reveal{opacity:0}
     }
   }
 
-  function panelStart(i){
-    for (var j = 0; j < segs.length; j++) if (segs[j].i === i) return segs[j].start;
-    return 0;
-  }
+  function panelStart(i){ return panelS[i] || 0; }
 
   function nudge(d){
     pathTarget = Math.max(0, Math.min(pathLen, pathTarget + d));
@@ -1236,8 +1273,8 @@ body.is-loading .reveal{opacity:0}
     /* Anchor the column to whichever panel the route is on. It holds still
        within a column, so the stream never slides along with the viewport, and
        it only shifts between columns, which happens off-screen mid-turn. */
-    if (pathMode && segs.length){
-      var pl = panels[segAt(pathPos).i];
+    if (pathMode && pathPts.length){
+      var pl = panels[pointAt(pathPos).i];
       if (pl) srcX = (parseFloat(pl.style.left) || 0) + vw / 2;
     }
   }
@@ -1499,7 +1536,7 @@ body.is-loading .reveal{opacity:0}
     if (pathMode){
       y = pathPos;
       prog = pathLen > 0 ? pathPos / pathLen : 0;
-      if (segs.length) setActive(segAt(pathPos).i);
+      if (pathPts.length) setActive(pointAt(pathPos).i);
     } else {
       y = window.pageYOffset;
       var max = document.documentElement.scrollHeight - window.innerHeight;
