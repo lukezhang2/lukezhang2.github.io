@@ -27,6 +27,14 @@
   --font-mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
   --ease:cubic-bezier(.22,1,.36,1);
   --gutter:clamp(20px,5vw,48px);
+  /* Surfaces stay near-opaque so the grid and the line field read as depth
+     behind the page rather than as texture printed through the text. */
+  --glass:linear-gradient(180deg,rgba(24,28,40,.93),rgba(15,18,27,.95));
+  --chip:linear-gradient(180deg,rgba(32,37,53,.96),rgba(21,25,37,.96));
+  --chip-hot:linear-gradient(180deg,rgba(44,53,88,.97),rgba(26,32,53,.97));
+  --hi:inset 0 1px 0 rgba(255,255,255,.06);
+  --lift:0 2px 10px -4px rgba(0,0,0,.65);
+  --blur:blur(11px) saturate(125%);
 }
 
 *{margin:0;padding:0;box-sizing:border-box}
@@ -164,8 +172,9 @@ section{padding:clamp(72px,11vw,128px) 0;position:relative}
 
 .eyebrow{
   display:inline-flex;align-items:center;gap:9px;
-  padding:6px 14px 6px 11px;border:1px solid var(--border);border-radius:99px;
-  background:rgba(255,255,255,.028);
+  padding:7px 16px 7px 12px;border:1px solid var(--border);border-radius:99px;
+  background:var(--chip);box-shadow:var(--hi),var(--lift);
+  backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
   font-family:var(--font-mono);font-size:.7rem;letter-spacing:.14em;
   text-transform:uppercase;color:var(--muted);margin-bottom:26px;
 }
@@ -193,14 +202,17 @@ section{padding:clamp(72px,11vw,128px) 0;position:relative}
 .btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8}
 .btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#06070c;border-color:transparent;font-weight:600}
 .btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 34px -12px rgba(111,143,255,.7)}
-.btn-ghost{color:var(--text);background:rgba(255,255,255,.03)}
-.btn-ghost:hover{border-color:var(--border-bright);background:rgba(255,255,255,.07);transform:translateY(-2px)}
+.btn-ghost{color:var(--text);background:var(--chip);box-shadow:var(--hi),var(--lift);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur)}
+.btn-ghost:hover{border-color:var(--border-bright);background:var(--chip-hot);transform:translateY(-2px)}
 
 .meta-row{display:flex;flex-wrap:wrap;gap:12px}
 .meta{
-  border:1px solid var(--border);border-radius:12px;
-  background:rgba(255,255,255,.022);padding:11px 16px;
+  border:1px solid var(--border);border-radius:13px;
+  background:var(--chip);box-shadow:var(--hi),var(--lift);
+  backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
+  padding:11px 17px;transition:.28s var(--ease);
 }
+.meta:hover{border-color:rgba(111,143,255,.4);transform:translateY(-2px)}
 .meta-k{font-family:var(--font-mono);font-size:.62rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted-dim)}
 .meta-v{font-size:.9rem;font-weight:500;margin-top:2px}
 
@@ -229,7 +241,9 @@ section{padding:clamp(72px,11vw,128px) 0;position:relative}
 /* ============ CARDS ============ */
 .card{
   position:relative;border:1px solid var(--border);border-radius:16px;
-  background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.012));
+  background:var(--glass);
+  backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
+  box-shadow:var(--hi),0 8px 30px -18px rgba(0,0,0,.9);
   padding:clamp(22px,3vw,30px);overflow:hidden;
   transition:border-color .35s ease,transform .35s var(--ease);
 }
@@ -249,9 +263,16 @@ section{padding:clamp(72px,11vw,128px) 0;position:relative}
 .icon-badge svg{width:19px;height:19px;stroke:var(--accent);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
 
 .badge-now{
+  display:inline-flex;align-items:center;gap:6px;
   font-family:var(--font-mono);font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;
-  color:#9fd8c6;border:1px solid rgba(86,224,200,.35);background:rgba(86,224,200,.1);
-  border-radius:99px;padding:3px 10px;white-space:nowrap;flex:none;
+  color:#a8e2d0;border:1px solid rgba(86,224,200,.32);
+  background:linear-gradient(180deg,rgba(24,52,48,.96),rgba(15,32,30,.96));
+  box-shadow:var(--hi);
+  border-radius:99px;padding:4px 12px;white-space:nowrap;flex:none;
+}
+.badge-now::before{
+  content:'';width:5px;height:5px;border-radius:50%;background:#56e0c8;
+  box-shadow:0 0 7px rgba(86,224,200,.9);flex:none;
 }
 
 /* ============ EDUCATION ============ */
@@ -268,7 +289,7 @@ section{padding:clamp(72px,11vw,128px) 0;position:relative}
 .school-facts li{display:flex;justify-content:space-between;gap:14px;font-size:.87rem;color:var(--muted)}
 .school-facts b{color:var(--text);font-weight:500;text-align:right}
 .gpa-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;border-top:1px solid var(--border);padding-top:16px}
-.gpa{border:1px solid var(--border);border-radius:12px;padding:14px;background:rgba(255,255,255,.02)}
+.gpa{border:1px solid rgba(255,255,255,.085);border-radius:12px;padding:14px;background:var(--chip);box-shadow:var(--hi)}
 .gpa-num{font-family:var(--font-display);font-size:1.22rem;font-weight:600;letter-spacing:-.03em;color:var(--text)}
 .gpa-lbl{font-family:var(--font-mono);font-size:.6rem;letter-spacing:.13em;text-transform:uppercase;color:var(--muted-dim);margin-top:2px}
 
@@ -283,13 +304,23 @@ section{padding:clamp(72px,11vw,128px) 0;position:relative}
   font-family:var(--font-mono);font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;
   color:var(--muted-dim);margin-bottom:11px;
 }
-.tags{display:flex;flex-wrap:wrap;gap:7px}
+.tags{display:flex;flex-wrap:wrap;gap:8px}
 .tag{
-  font-size:.79rem;color:var(--muted);padding:5px 12px;border-radius:99px;
-  border:1px solid var(--border);background:rgba(255,255,255,.022);transition:.25s ease;
+  display:inline-flex;align-items:center;
+  font-size:.79rem;color:var(--muted);padding:6px 14px;border-radius:99px;
+  border:1px solid rgba(255,255,255,.085);
+  background:var(--chip);box-shadow:var(--hi),var(--lift);
+  transition:.25s var(--ease);
 }
-.tag:hover{color:var(--text);border-color:rgba(111,143,255,.4);background:rgba(111,143,255,.08)}
-.tag.is-key{color:#cdd8ff;border-color:rgba(111,143,255,.3);background:rgba(111,143,255,.09)}
+.tag:hover{
+  color:var(--text);border-color:rgba(111,143,255,.5);
+  background:var(--chip-hot);transform:translateY(-1px);
+}
+.tag.is-key{color:#cfd9ff;border-color:rgba(111,143,255,.3);background:var(--chip-hot)}
+.tag.is-key::before{
+  content:'';width:4px;height:4px;border-radius:50%;margin-right:8px;flex:none;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+}
 
 /* ============ ACTIVITIES ============ */
 .act-list{display:flex;flex-direction:column;gap:16px}
@@ -298,8 +329,10 @@ section{padding:clamp(72px,11vw,128px) 0;position:relative}
 .act-role{font-family:var(--font-display);font-size:1.16rem;font-weight:600;letter-spacing:-.02em;line-height:1.35}
 .act-org{color:var(--muted);font-size:.93rem}
 .act-meta{
-  font-family:var(--font-mono);font-size:.68rem;letter-spacing:.08em;color:var(--muted-dim);
-  border:1px solid var(--border);border-radius:99px;padding:4px 11px;white-space:nowrap;flex:none;
+  font-family:var(--font-mono);font-size:.68rem;letter-spacing:.08em;color:var(--muted);
+  border:1px solid rgba(255,255,255,.085);border-radius:99px;
+  background:var(--chip);box-shadow:var(--hi);
+  padding:5px 13px;white-space:nowrap;flex:none;
 }
 @media(max-width:560px){.act-head{flex-wrap:wrap}.act-meta{order:3}}
 .bullets{list-style:none;display:flex;flex-direction:column;gap:10px}
@@ -313,13 +346,18 @@ section{padding:clamp(72px,11vw,128px) 0;position:relative}
 .awards{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px}
 .award{
   display:flex;align-items:center;gap:14px;padding:18px 20px;
-  border:1px solid var(--border);border-radius:14px;background:rgba(255,255,255,.022);
+  border:1px solid var(--border);border-radius:15px;
+  background:var(--glass);box-shadow:var(--hi),var(--lift);
+  backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
   transition:.32s var(--ease);
 }
-.award:hover{border-color:rgba(111,143,255,.38);background:rgba(111,143,255,.06);transform:translateY(-2px)}
+.award:hover{border-color:rgba(111,143,255,.42);transform:translateY(-2px)}
+.award:hover .award-mark{border-color:rgba(111,143,255,.45)}
 .award-mark{
-  width:32px;height:32px;border-radius:9px;flex:none;display:grid;place-items:center;
-  border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);
+  width:33px;height:33px;border-radius:10px;flex:none;display:grid;place-items:center;
+  border:1px solid rgba(255,255,255,.1);
+  background:linear-gradient(140deg,rgba(111,143,255,.16),rgba(176,124,255,.08));
+  transition:border-color .32s ease;
 }
 .award-mark svg{width:15px;height:15px;stroke:var(--accent);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .award-name{font-size:.93rem;font-weight:500;line-height:1.4}
@@ -337,7 +375,8 @@ section{padding:clamp(72px,11vw,128px) 0;position:relative}
   position:relative;overflow:hidden;text-align:center;
   border:1px solid var(--border);border-radius:22px;
   padding:clamp(38px,6vw,68px) clamp(22px,4vw,48px);
-  background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.012));
+  background:var(--glass);box-shadow:var(--hi),0 10px 40px -22px rgba(0,0,0,.95);
+  backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
 }
 .contact-card::after{
   content:'';position:absolute;top:-52%;left:50%;transform:translateX(-50%);
@@ -912,71 +951,98 @@ body.is-loading .reveal{opacity:0}
   }
 
   /* ---------- river ----------
-     Short vertical strands drifting down. Their travel is driven mainly by how
-     far the reader scrolls, each at its own depth, so the field moves with the
-     page rather than animating independently of it. */
+     Strands are born at the scroll cue and fall under their own speed. Their
+     coordinates are in page space, not screen space, so a strand drifts out of
+     view on its own and the reader can scroll down to travel alongside it. */
   var lines = [];
-  var riverOn = false;
   var TINTS = ['140,168,255', '176,124,255', '120,214,200'];
-  var LINE_COUNT = 48;
+  var LINE_COUNT = 44;
+  var srcX = 0, srcDocY = 0;
 
-  function makeLine(y){
+  function readSource(){
+    var cue = document.getElementById('scrollCue');
+    srcX = vw / 2;
+    srcDocY = 520;
+    if (cue){
+      var r = cue.getBoundingClientRect();
+      if (r.width) srcX = r.left + r.width / 2;
+      srcDocY = r.bottom + window.pageYOffset;
+    }
+  }
+
+  /* Spawn at the cue, or just above the fold once the cue is far behind, so the
+     field keeps feeding no matter how far down the page the reader is. */
+  function makeLine(atSource){
+    var y = atSource
+      ? Math.max(srcDocY, window.pageYOffset - 140) + Math.random() * 60
+      : window.pageYOffset + Math.random() * vh;
     return {
-      x: Math.random() * vw,
+      x: srcX + (Math.random() - 0.5) * 120,
       y: y,
-      len: 22 + Math.random() * 62,
-      w: 0.7 + Math.random() * 0.8,
-      a: 0.3 + Math.random() * 0.28,
+      len: 20 + Math.random() * 58,
+      w: 0.6 + Math.random() * 0.7,
+      a: 0.16 + Math.random() * 0.2,
       tint: TINTS[(Math.random() * TINTS.length) | 0],
-      depth: 0.3 + Math.random() * 1.1,
-      drift: 0.15 + Math.random() * 0.5,
-      sway: 3 + Math.random() * 9,
-      phase: Math.random() * Math.PI * 2
+      vy: 0.5 + Math.random() * 1.45,
+      spread: (Math.random() - 0.5) * 0.9,
+      sway: 4 + Math.random() * 11,
+      phase: Math.random() * Math.PI * 2,
+      travel: 0,
+      range: 1500 + Math.random() * 2800
     };
   }
 
   function seedRiver(){
+    readSource();
     lines = [];
-    for (var i = 0; i < LINE_COUNT; i++) lines.push(makeLine(Math.random() * vh));
+    /* the standing field starts spread across the page; only new strands
+       emanate from the cue, so load does not look like a narrow column */
+    for (var i = 0; i < LINE_COUNT; i++){
+      var p = makeLine(false);
+      p.travel = Math.random() * p.range * 0.6;
+      p.x += (Math.random() - 0.5) * vw * 0.85;
+      lines.push(p);
+    }
   }
 
-  function riverFrame(t, dt, dScroll){
+  function riverFrame(t, dt){
     if (!riverCtx) return;
     var k = Math.min(dt / 16.67, 3);
     riverCtx.clearRect(0, 0, vw, vh);
-    if (!riverOn) return;
 
-    var edge = vh * 0.16;
+    var top = window.pageYOffset;
+    var edge = vh * 0.14;
+
     for (var i = 0; i < lines.length; i++){
       var p = lines[i];
-      p.y += p.drift * k + dScroll * p.depth;
+      p.y += p.vy * k;
+      p.x += p.spread * k * 0.4;
+      p.travel += p.vy * k;
 
-      if (p.y - p.len > vh){ lines[i] = makeLine(-p.len - Math.random() * 60); continue; }
-      if (p.y + p.len < 0){ lines[i] = makeLine(vh + Math.random() * 60); continue; }
+      if (p.travel > p.range){ lines[i] = makeLine(true); continue; }
 
-      var lean = Math.sin(t * 0.45 + p.phase + p.y * 0.0035) * p.sway;
-      var mid = p.y + p.len * 0.5;
+      var sy = p.y - top;
+      if (sy > vh + 120 || sy + p.len < -120) continue;
+
+      var lean = Math.sin(t * 0.4 + p.phase + p.y * 0.0028) * p.sway;
+      var mid = sy + p.len * 0.5;
       var fade = 1;
       if (mid < edge) fade = Math.max(0, mid / edge);
       else if (mid > vh - edge) fade = Math.max(0, (vh - mid) / edge);
+      if (fade <= 0) continue;
 
       riverCtx.strokeStyle = 'rgba(' + p.tint + ',' + (p.a * fade).toFixed(3) + ')';
       riverCtx.lineWidth = p.w;
       riverCtx.beginPath();
-      riverCtx.moveTo(p.x + lean, p.y);
-      riverCtx.lineTo(p.x - lean * 0.35, p.y + p.len);
+      riverCtx.moveTo(p.x + lean, sy);
+      riverCtx.lineTo(p.x - lean * 0.35, sy + p.len);
       riverCtx.stroke();
     }
   }
 
   function updateRiverGate(){
-    var hero = document.querySelector('.hero');
-    var gate = hero ? hero.offsetHeight * 0.55 : 400;
-    var on = window.pageYOffset > gate;
-    if (on !== riverOn){
-      riverOn = on;
-      riverCv.classList.toggle('is-flowing', on);
-    }
+    readSource();
+    if (!riverCv.classList.contains('is-flowing')) riverCv.classList.add('is-flowing');
   }
 
   /* ---------- spacetime ----------
@@ -1156,12 +1222,8 @@ body.is-loading .reveal{opacity:0}
   if (!reduce){
     var t0 = performance.now();
     var prev = t0;
-    var prevScroll = window.pageYOffset;
     (function tick(now){
-      var sy = window.pageYOffset;
-      var d = Math.max(-140, Math.min(140, sy - prevScroll));
-      prevScroll = sy;
-      riverFrame((now - t0) / 1000, now - prev, d);
+      riverFrame((now - t0) / 1000, now - prev);
       prev = now;
       cursorFrame();
       requestAnimationFrame(tick);
