@@ -157,8 +157,18 @@ body.cursor-on.cursor-live,body.cursor-on.cursor-live *{cursor:none!important}
 @media(max-width:760px){.nav-links{display:none}}
 
 /* ============ LAYOUT ============ */
-.wrap{position:relative;z-index:1;max-width:1120px;margin:0 auto;padding:0 var(--gutter)}
-section{padding:clamp(72px,11vw,128px) 0;position:relative}
+.world{position:relative;z-index:1;display:block}
+.panel{position:relative;padding:clamp(72px,11vw,128px) 0}
+.panel-in{max-width:1120px;margin:0 auto;padding:0 var(--gutter)}
+
+/* Path mode lays the panels out on a 2D canvas and glides the viewport along a
+   down/right/down/left route. Falls back to ordinary stacked scrolling when the
+   route is not in use (touch, narrow screens, reduced motion). */
+body.path{overflow:hidden;height:100vh}
+body.path .world{position:fixed;top:0;left:0;width:100vw;height:100vh;will-change:transform}
+body.path .panel{position:absolute;top:0;left:0;width:100vw}
+body.path .edu-col{position:static}
+body.path footer{margin-top:44px}
 .sec-head{display:flex;align-items:baseline;gap:16px;margin-bottom:44px;flex-wrap:wrap}
 .sec-num{font-family:var(--font-mono);font-size:.78rem;color:var(--accent);letter-spacing:.1em}
 .sec-title{font-family:var(--font-display);font-size:clamp(1.55rem,4vw,2.4rem);font-weight:600;letter-spacing:-.025em}
@@ -439,9 +449,8 @@ section{padding:clamp(72px,11vw,128px) 0;position:relative}
 /* ============ FOOTER ============ */
 footer{
   position:relative;z-index:1;border-top:1px solid var(--border);
-  padding:34px var(--gutter);margin:20px auto 0;
+  padding:30px 0 0;margin:56px auto 0;
   display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
-  max-width:1120px;
 }
 .foot-note{font-family:var(--font-mono);font-size:.71rem;color:var(--muted-dim);letter-spacing:.05em}
 .foot-links{display:flex;gap:18px}
@@ -558,11 +567,11 @@ body.is-loading .reveal{opacity:0}
   </div>
 </nav>
 
-<main id="top">
-<div class="wrap">
+<main id="top" class="world">
 
   <!-- ===== HERO ===== -->
-  <section class="hero">
+  <section class="panel hero">
+  <div class="panel-in">
     <div class="hero-grid">
       <div>
         <div class="eyebrow reveal"><span class="pulse"></span> Computer Science &middot; Stony Brook</div>
@@ -622,11 +631,12 @@ body.is-loading .reveal{opacity:0}
         </svg>
       </div>
     </div>
-    <div class="scroll-cue" id="scrollCue" aria-hidden="true">Scroll<span></span></div>
+    <div class="scroll-cue" id="scrollCue" aria-hidden="true">Scroll<span></span></div>  </div>
   </section>
 
   <!-- ===== EDUCATION ===== -->
-  <section id="education">
+  <section class="panel" id="education">
+  <div class="panel-in">
     <div class="sec-head reveal">
       <span class="sec-num">01</span>
       <h2 class="sec-title">Education</h2>
@@ -711,11 +721,12 @@ body.is-loading .reveal{opacity:0}
           </div>
         </div>
       </div>
-    </div>
+    </div>  </div>
   </section>
 
   <!-- ===== ACTIVITIES ===== -->
-  <section id="activities">
+  <section class="panel" id="activities">
+  <div class="panel-in">
     <div class="sec-head reveal">
       <span class="sec-num">02</span>
       <h2 class="sec-title">Activities &amp; Leadership</h2>
@@ -793,11 +804,12 @@ body.is-loading .reveal{opacity:0}
           <li>Designed lesson plans and mentored student projects, providing iterative feedback to build confidence and problem-solving skills.</li>
         </ul>
       </article>
-    </div>
+    </div>  </div>
   </section>
 
   <!-- ===== AWARDS ===== -->
-  <section id="awards">
+  <section class="panel" id="awards">
+  <div class="panel-in">
     <div class="sec-head reveal">
       <span class="sec-num">03</span>
       <h2 class="sec-title">Awards &amp; Honors</h2>
@@ -833,11 +845,12 @@ body.is-loading .reveal{opacity:0}
         <div class="award-mark"><svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div>
         <div><div class="award-name">Stony Brook University Hackathon Winner</div><div class="award-sub">Best Creative</div></div>
       </div>
-    </div>
+    </div>  </div>
   </section>
 
   <!-- ===== SKILLS ===== -->
-  <section id="skills">
+  <section class="panel" id="skills">
+  <div class="panel-in">
     <div class="sec-head reveal">
       <span class="sec-num">04</span>
       <h2 class="sec-title">Technical Skills</h2>
@@ -866,11 +879,12 @@ body.is-loading .reveal{opacity:0}
         </div>
         <p class="skill-desc">Studied at Stanford University Summer Session through Programming Abstractions, covering recursion, pointers, and abstract data types.</p>
       </div>
-    </div>
+    </div>  </div>
   </section>
 
   <!-- ===== CONTACT ===== -->
-  <section id="contact">
+  <section class="panel" id="contact">
+  <div class="panel-in">
     <div class="contact-card reveal">
       <h2>Let&rsquo;s get in touch</h2>
       <p>Open to conversations about computer science, robotics, music, and opportunities to build and learn.</p>
@@ -880,19 +894,20 @@ body.is-loading .reveal{opacity:0}
       </a>
       <div class="contact-loc">Stony Brook, New York</div>
     </div>
-  </section>
 
-</div>
-</main>
-
-<footer>
+    <footer>
   <div class="foot-note">&copy; <span id="year">2026</span> Luke J Zhang</div>
   <div class="foot-links">
     <a href="https://github.com/lukezhang2" target="_blank" rel="noopener">GitHub</a>
     <a href="mailto:lukejz2308@gmail.com">Email</a>
     <a href="#top">Back to top</a>
   </div>
-</footer>
+    </footer>
+  </div>
+  </section>
+
+</main>
+
 
 <script>
 (function(){
@@ -959,6 +974,121 @@ body.is-loading .reveal{opacity:0}
     revealables.forEach(function(el){ el.classList.add('in'); });
   }
 
+  /* ---------- path navigation ----------
+     Panels sit on a 2D canvas laid out along a down / right / down / left route.
+     One scalar drives travel along that polyline: wheel and swipe always mean
+     forward and back, whichever way the route happens to bend. Nothing ever
+     travels upward. */
+  var world = document.querySelector('.world');
+  var panels = Array.prototype.slice.call(world.querySelectorAll('.panel'));
+  var TURNS = ['down', 'right', 'down', 'left', 'down'];
+  var segs = [];
+  var pathLen = 0, pathPos = 0, pathTarget = 0, pathX = 0, pathY = 0;
+  var pathMode = false;
+
+  function scrollPos(){ return pathMode ? pathY : window.pageYOffset; }
+
+  function usePath(){
+    return window.matchMedia('(pointer: fine)').matches &&
+           window.innerWidth >= 900 && !reduce;
+  }
+
+  function buildPath(){
+    segs = []; pathLen = 0;
+    if (!pathMode){
+      panels.forEach(function(p){ p.style.left = ''; p.style.top = ''; });
+      world.style.transform = '';
+      return;
+    }
+    var x = 0, y = 0;
+    panels.forEach(function(p, i){
+      p.style.left = x + 'px';
+      p.style.top = y + 'px';
+      var endY = y + Math.max(0, p.offsetHeight - vh);
+      segs.push({ i: i, x0: x, y0: y, x1: x, y1: endY });
+      if (i < panels.length - 1){
+        var dir = TURNS[Math.min(i, TURNS.length - 1)];
+        var nx = x, ny = endY;
+        if (dir === 'down') ny = endY + vh;
+        else if (dir === 'right') nx = x + vw;
+        else nx = x - vw;
+        segs.push({ i: i, x0: x, y0: endY, x1: nx, y1: ny, turn: true });
+        x = nx; y = ny;
+      }
+    });
+    segs.forEach(function(s){
+      s.start = pathLen;
+      s.len = Math.sqrt((s.x1 - s.x0) * (s.x1 - s.x0) + (s.y1 - s.y0) * (s.y1 - s.y0));
+      pathLen += s.len;
+    });
+    pathTarget = Math.min(pathTarget, pathLen);
+    pathPos = Math.min(pathPos, pathLen);
+    applyPath();
+  }
+
+  function segAt(s){
+    for (var i = 0; i < segs.length; i++){
+      if (s <= segs[i].start + segs[i].len) return segs[i];
+    }
+    return segs[segs.length - 1];
+  }
+
+  function applyPath(){
+    if (!pathMode || !segs.length) return;
+    var s = Math.max(0, Math.min(pathLen, pathPos));
+    var sg = segAt(s);
+    var t = sg.len ? (s - sg.start) / sg.len : 0;
+    pathX = sg.x0 + (sg.x1 - sg.x0) * t;
+    pathY = sg.y0 + (sg.y1 - sg.y0) * t;
+    world.style.transform = 'translate3d(' + (-pathX) + 'px,' + (-pathY) + 'px,0)';
+  }
+
+  function panelStart(i){
+    for (var j = 0; j < segs.length; j++) if (segs[j].i === i) return segs[j].start;
+    return 0;
+  }
+
+  function nudge(d){
+    pathTarget = Math.max(0, Math.min(pathLen, pathTarget + d));
+  }
+
+  function pathFrame(k){
+    if (!pathMode) return;
+    var d = pathTarget - pathPos;
+    if (Math.abs(d) < 0.05){ pathPos = pathTarget; return; }
+    pathPos += d * Math.min(1, 0.13 * k);
+    applyPath();
+    onScroll();
+  }
+
+  if (!reduce){
+    window.addEventListener('wheel', function(e){
+      if (!pathMode) return;
+      e.preventDefault();
+      nudge(e.deltaMode === 1 ? e.deltaY * 18 : e.deltaY);
+    }, { passive: false });
+
+    var tY = 0;
+    window.addEventListener('touchstart', function(e){ tY = e.touches[0].clientY; }, { passive: true });
+    window.addEventListener('touchmove', function(e){
+      if (!pathMode) return;
+      var y = e.touches[0].clientY;
+      nudge((tY - y) * 1.7);
+      tY = y;
+      e.preventDefault();
+    }, { passive: false });
+
+    window.addEventListener('keydown', function(e){
+      if (!pathMode || e.metaKey || e.ctrlKey || e.altKey) return;
+      var step = vh * 0.82;
+      var k = e.key;
+      if (k === 'ArrowDown' || k === 'PageDown' || k === ' '){ nudge(step); e.preventDefault(); }
+      else if (k === 'ArrowUp' || k === 'PageUp'){ nudge(-step); e.preventDefault(); }
+      else if (k === 'Home'){ pathTarget = 0; e.preventDefault(); }
+      else if (k === 'End'){ pathTarget = pathLen; e.preventDefault(); }
+    });
+  }
+
   /* ---------- canvas sizing ---------- */
   var riverCv = document.getElementById('river');
   var warpCv = document.getElementById('warp');
@@ -980,6 +1110,12 @@ body.is-loading .reveal{opacity:0}
   function sizeCanvases(){
     vw = document.documentElement.clientWidth;
     vh = window.innerHeight;
+    var want = usePath();
+    if (want !== pathMode){
+      pathMode = want;
+      document.body.classList.toggle('path', pathMode);
+    }
+    buildPath();
     riverCtx = sizeCanvas(riverCv);
     riverCtx.lineCap = 'round';
     warpCtx = sizeCanvas(warpCv);
@@ -1013,7 +1149,7 @@ body.is-loading .reveal{opacity:0}
       var r = el.getBoundingClientRect();
       if (r.height) {
         srcX = r.left + r.width / 2;
-        srcDocY = r.bottom + window.pageYOffset;
+        srcDocY = r.bottom + scrollPos();
       }
     }
   }
@@ -1022,8 +1158,8 @@ body.is-loading .reveal{opacity:0}
      field keeps feeding no matter how far down the page the reader is. */
   function makeLine(atSource){
     var y = atSource
-      ? Math.max(srcDocY, window.pageYOffset - 130) + Math.random() * 70
-      : window.pageYOffset + Math.random() * vh;
+      ? Math.max(srcDocY, scrollPos() - 130) + Math.random() * 70
+      : scrollPos() + Math.random() * vh;
     return {
       x: srcX + (Math.random() - 0.5) * 3,     /* leave from the hairline itself */
       y: y,
@@ -1076,7 +1212,7 @@ body.is-loading .reveal{opacity:0}
 
     emitPending(k);
 
-    var top = window.pageYOffset;
+    var top = scrollPos();
     var edge = vh * 0.14;
 
     for (var i = 0; i < lines.length; i++){
@@ -1127,7 +1263,7 @@ body.is-loading .reveal{opacity:0}
   function updateRiverGate(){
     readSource();
     riverCv.classList.add('is-flowing');
-    var y = window.pageYOffset;
+    var y = scrollPos();
     var trip = srcDocY - vh * 0.45;
     if (burstArmed && y > trip){ burstArmed = false; burstFromCue(); }
     else if (!burstArmed && y < trip - 150){ burstArmed = true; }
@@ -1228,9 +1364,17 @@ body.is-loading .reveal{opacity:0}
   var lastY = 0, ticking = false;
 
   function onScroll(){
-    var y = window.pageYOffset;
-    var max = document.documentElement.scrollHeight - window.innerHeight;
-    bar.style.transform = 'scaleX(' + (max > 0 ? Math.min(y / max, 1) : 0) + ')';
+    var y, prog;
+    if (pathMode){
+      y = pathPos;
+      prog = pathLen > 0 ? pathPos / pathLen : 0;
+      if (segs.length) setActive(segAt(pathPos).i);
+    } else {
+      y = window.pageYOffset;
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      prog = max > 0 ? y / max : 0;
+    }
+    bar.style.transform = 'scaleX(' + Math.min(Math.max(prog, 0), 1) + ')';
     nav.classList.toggle('is-stuck', y > 40);
     nav.classList.toggle('is-hidden', y > 420 && y > lastY);
     lastY = y;
@@ -1252,9 +1396,21 @@ body.is-loading .reveal{opacity:0}
   /* ---------- active nav link ---------- */
   var links = Array.prototype.slice.call(document.querySelectorAll('.nav-links a'));
   var ids = ['education','activities','awards','skills','contact'];
+
+  function setActive(idx){
+    if (!links) return;   /* onScroll runs once before this section initialises */
+    var id = panels[idx] ? panels[idx].id : '';
+    links.forEach(function(a){
+      a.classList.toggle('is-active', !!id && a.getAttribute('href') === '#' + id);
+    });
+  }
+
+  /* In path mode the active panel comes straight off the route, since a panel
+     parked off to the side is not "scrolled past" in any vertical sense. */
   if ('IntersectionObserver' in window){
     var visible = {};
     var navIO = new IntersectionObserver(function(entries){
+      if (pathMode) return;
       entries.forEach(function(entry){ visible[entry.target.id] = entry.isIntersecting; });
       var current = null;
       ids.forEach(function(id){ if (!current && visible[id]) current = id; });
@@ -1267,6 +1423,19 @@ body.is-loading .reveal{opacity:0}
       if (el) navIO.observe(el);
     });
   }
+
+  /* internal links drive the route instead of jumping the document */
+  document.querySelectorAll('a[href^="#"]').forEach(function(a){
+    a.addEventListener('click', function(e){
+      if (!pathMode) return;
+      var href = a.getAttribute('href');
+      e.preventDefault();
+      if (href === '#top'){ pathTarget = 0; return; }
+      var el = document.querySelector(href);
+      var idx = el ? panels.indexOf(el) : -1;
+      if (idx >= 0) pathTarget = panelStart(idx);
+    });
+  });
 
   /* ---------- cursor ---------- */
   var cursorOn = window.matchMedia('(pointer: fine)').matches && !reduce;
@@ -1314,9 +1483,19 @@ body.is-loading .reveal{opacity:0}
   if (!reduce){
     var t0 = performance.now();
     var prev = t0;
+    var revealTick = 0;
     (function tick(now){
-      riverFrame((now - t0) / 1000, now - prev);
+      var dt = now - prev;
       prev = now;
+      var k = Math.min(dt / 16.67, 3);
+      pathFrame(k);
+      /* IntersectionObserver lags behind a moving transform, so nudge the
+         reveals a few times a second while the route is in motion */
+      if (pathMode && Math.abs(pathTarget - pathPos) > 0.5){
+        revealTick += dt;
+        if (revealTick > 110){ revealTick = 0; syncReveals(); }
+      }
+      riverFrame((now - t0) / 1000, dt);
       cursorFrame();
       requestAnimationFrame(tick);
     })(t0);
