@@ -59,15 +59,15 @@ svg{display:block}
 /* The grid is drawn on canvas, not CSS, so the pointer can actually bend it. */
 .bg-grid{position:absolute;inset:0}
 .orb-layer{position:absolute;inset:0;transition:transform 1s var(--ease);will-change:transform}
-.orb{position:absolute;border-radius:50%;filter:blur(90px);opacity:.5}
+.orb{position:absolute;border-radius:50%;filter:blur(46px);opacity:.5}
 .orb-1{width:44vw;height:44vw;min-width:340px;min-height:340px;top:-14vw;left:-8vw;background:radial-gradient(circle,rgba(111,143,255,.5),transparent 68%);animation:drift1 26s var(--ease) infinite alternate}
 .orb-2{width:38vw;height:38vw;min-width:300px;min-height:300px;top:22vh;right:-12vw;background:radial-gradient(circle,rgba(176,124,255,.4),transparent 68%);animation:drift2 32s var(--ease) infinite alternate}
 .orb-3{width:34vw;height:34vw;min-width:280px;min-height:280px;bottom:-8vh;left:28vw;background:radial-gradient(circle,rgba(86,224,200,.22),transparent 70%);animation:drift3 38s var(--ease) infinite alternate}
-@keyframes drift1{to{transform:translate3d(9vw,7vh,0) scale(1.15)}}
-@keyframes drift2{to{transform:translate3d(-8vw,-9vh,0) scale(1.1)}}
-@keyframes drift3{to{transform:translate3d(6vw,-6vh,0) scale(1.2)}}
+@keyframes drift1{to{transform:translate3d(9vw,7vh,0)}}
+@keyframes drift2{to{transform:translate3d(-8vw,-9vh,0)}}
+@keyframes drift3{to{transform:translate3d(6vw,-6vh,0)}}
 .bg-noise{
-  position:absolute;inset:0;opacity:.04;mix-blend-mode:overlay;
+  position:absolute;inset:0;opacity:.03;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 .bg-vignette{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 40%,transparent 40%,rgba(7,8,12,.75) 100%)}
@@ -209,7 +209,12 @@ body.cursor-on.cursor-live,body.cursor-on.cursor-live *{cursor:none!important}
    down/right/down/left route. Falls back to ordinary stacked scrolling when the
    route is not in use (touch, narrow screens, reduced motion). */
 body.path{overflow:hidden;height:100vh}
-body.path .world{position:fixed;top:0;left:0;width:100vw;height:100vh;will-change:transform}
+/* No will-change here. The panels span the whole route, so hinting this
+   container promotes a layer the size of every panel combined, which on a
+   retina display is hundreds of megabytes of texture to re-raster on each
+   move. translate3d already composites; the off-screen panels are hidden
+   instead, which keeps the painted area near one viewport. */
+body.path .world{position:fixed;top:0;left:0;width:100vw;height:100vh}
 body.path .panel{position:absolute;top:0;left:0;width:100vw}
 body.path .edu-col{position:static}
 body.path footer{margin-top:44px}
@@ -1052,7 +1057,10 @@ body.is-loading .reveal{opacity:0}
     panels.forEach(function(p, i){
       p.style.left = x + 'px';
       p.style.top = y + 'px';
-      var endY = y + Math.max(0, p.offsetHeight - vh);
+      p.style.visibility = '';
+      p.panelH = p.offsetHeight;
+      p.onScreen = true;
+      var endY = y + Math.max(0, p.panelH - vh);
       segs.push({ i: i, x0: x, y0: y, x1: x, y1: endY });
       if (i < panels.length - 1){
         var dir = TURNS[Math.min(i, TURNS.length - 1)];
@@ -1089,6 +1097,26 @@ body.is-loading .reveal{opacity:0}
     pathX = sg.x0 + (sg.x1 - sg.x0) * t;
     pathY = sg.y0 + (sg.y1 - sg.y0) * t;
     world.style.transform = 'translate3d(' + (-pathX) + 'px,' + (-pathY) + 'px,0)';
+    cullPanels();
+  }
+
+  /* Keep the painted area near one viewport. Hidden panels still hold their
+     geometry, so the route, the reveals and the measurements are unaffected. */
+  function cullPanels(){
+    /* true overlap, not a generous margin: a panel parked exactly one viewport
+       away would otherwise paint the whole time. Motion is always eased, so a
+       panel enters by a few pixels before it is needed. */
+    var m = 2;
+    for (var i = 0; i < panels.length; i++){
+      var p = panels[i];
+      var px = (parseFloat(p.style.left) || 0) - pathX;
+      var py = (parseFloat(p.style.top) || 0) - pathY;
+      var on = px < vw + m && px + vw > -m && py < vh + m && py + p.panelH > -m;
+      if (on !== p.onScreen){
+        p.onScreen = on;
+        p.style.visibility = on ? '' : 'hidden';
+      }
+    }
   }
 
   function panelStart(i){
