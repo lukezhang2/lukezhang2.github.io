@@ -115,6 +115,46 @@ body.cursor-on.cursor-live,body.cursor-on.cursor-live *{cursor:none!important}
 }
 .cursor-ring.is-press{width:22px;height:22px;margin:-11px 0 0 -11px}
 
+/* ============ COPY TOAST ============ */
+/* anchored at the pointer and grown from its bottom-left, so it reads as
+   emerging out of the cursor rather than appearing beside it */
+.toast{
+  position:fixed;z-index:400;pointer-events:none;opacity:0;
+  transform-origin:0 100%;
+  padding:9px 16px;border-radius:99px;white-space:nowrap;
+  font-family:var(--font-mono);font-size:.73rem;letter-spacing:.05em;font-weight:500;
+  color:#06070c;background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  box-shadow:0 12px 34px -12px rgba(111,143,255,.9);
+}
+.toast.is-on{animation:toastOut 2s var(--ease) forwards}
+@keyframes toastOut{
+  0%{opacity:0;transform:translate(4px,-4px) scale(.3)}
+  16%{opacity:1;transform:translate(13px,-28px) scale(1)}
+  72%{opacity:1;transform:translate(13px,-32px) scale(1)}
+  100%{opacity:0;transform:translate(13px,-50px) scale(.95)}
+}
+.spark{
+  position:fixed;z-index:399;pointer-events:none;opacity:0;
+  width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;
+  border:1.5px solid var(--accent);
+}
+.spark.is-on{animation:sparkOut .75s var(--ease) forwards}
+@keyframes sparkOut{
+  0%{opacity:.9;transform:scale(.3)}
+  100%{opacity:0;transform:scale(4.2)}
+}
+
+/* ============ TIME NOTE ============ */
+.timer-note{
+  margin:30px auto 0;max-width:52ch;text-align:center;
+  font-family:var(--font-mono);font-size:.75rem;line-height:1.8;
+  letter-spacing:.03em;color:var(--muted-dim);
+  opacity:0;transform:translateY(12px);
+  transition:opacity .8s var(--ease),transform .8s var(--ease);
+}
+.timer-note.is-on{opacity:1;transform:translateY(0)}
+.timer-note b{color:rgba(111,143,255,.95);font-weight:500}
+
 /* ============ SCROLL PROGRESS ============ */
 .progress{
   position:fixed;top:0;left:0;height:2px;width:100%;z-index:120;
@@ -176,8 +216,11 @@ body.path footer{margin-top:44px}
 .sec-note{width:100%;font-family:var(--font-mono);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted-dim)}
 
 /* ============ HERO ============ */
-.hero{min-height:100svh;display:flex;align-items:center;padding-top:96px;padding-bottom:64px}
-.hero-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(32px,5vw,72px);align-items:center;width:100%}
+/* Column flow rather than an absolutely placed cue, so the hairline can never
+   land on top of the chips no matter how the hero content wraps. */
+.hero{min-height:100svh;display:flex;flex-direction:column;padding-top:96px;padding-bottom:30px}
+.hero .panel-in{flex:1;display:flex;flex-direction:column;width:100%}
+.hero-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(32px,5vw,72px);align-items:center;width:100%;margin:auto 0}
 @media(max-width:920px){.hero-grid{grid-template-columns:1fr;gap:48px}}
 
 .eyebrow{
@@ -240,7 +283,7 @@ body.path footer{margin-top:44px}
 .orbit-glow{position:absolute;width:62%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,rgba(111,143,255,.3),transparent 70%);filter:blur(42px)}
 
 .scroll-cue{
-  position:absolute;left:50%;bottom:26px;transform:translateX(-50%);
+  margin:34px auto 0;
   display:flex;flex-direction:column;align-items:center;gap:9px;
   font-family:var(--font-mono);font-size:.62rem;letter-spacing:.24em;text-transform:uppercase;color:var(--muted-dim);
 }
@@ -554,6 +597,8 @@ body.is-loading .reveal{opacity:0}
 <div class="progress" id="progress" aria-hidden="true"></div>
 <div class="cursor-ring" id="cursorRing" aria-hidden="true"></div>
 <div class="cursor-dot" id="cursorDot" aria-hidden="true"></div>
+<div class="spark" id="spark" aria-hidden="true"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <!-- ===== NAV ===== -->
 <nav class="nav" id="nav">
@@ -579,14 +624,14 @@ body.is-loading .reveal{opacity:0}
         <p class="hero-lede reveal" style="--d:.12s">
           First year Computer Science student in the <strong>Honors College</strong> at
           <strong>Stony Brook University</strong>. Before this I taught beginner programming
-          on Long Island, wrote control logic for competition robots, and served as
-          <strong>president</strong> of my high school chamber orchestra.
+          on Long Island and served as <strong>president</strong> of my high school
+          chamber orchestra.
         </p>
         <div class="btn-row reveal" style="--d:.18s">
-          <a class="btn btn-primary" href="mailto:lukejz2308@gmail.com">
-            <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg>
+          <button class="btn btn-primary" type="button" id="copyMail" data-mail="lukejz2308@gmail.com">
+            <svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
             Get in touch
-          </a>
+          </button>
           <a class="btn btn-ghost" href="https://github.com/lukezhang2" target="_blank" rel="noopener">
             <svg viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
             GitHub
@@ -895,11 +940,12 @@ body.is-loading .reveal{opacity:0}
       <div class="contact-loc">Stony Brook, New York</div>
     </div>
 
+    <p class="timer-note" id="timerNote"></p>
+
     <footer>
   <div class="foot-note">&copy; <span id="year">2026</span> Luke J Zhang</div>
   <div class="foot-links">
     <a href="https://github.com/lukezhang2" target="_blank" rel="noopener">GitHub</a>
-    <a href="mailto:lukejz2308@gmail.com">Email</a>
     <a href="#top">Back to top</a>
   </div>
     </footer>
@@ -942,6 +988,7 @@ body.is-loading .reveal{opacity:0}
     document.body.classList.remove('is-loading');
     syncReveals();
     updateRiverGate();
+    readStart = performance.now();   /* the clock starts when the page is actually readable */
     setTimeout(function(){ if (loader.parentNode) loader.parentNode.removeChild(loader); }, 1400);
   }
   if (reduce){
@@ -1379,6 +1426,7 @@ body.is-loading .reveal{opacity:0}
     nav.classList.toggle('is-hidden', y > 420 && y > lastY);
     lastY = y;
     updateRiverGate();
+    checkBottom();
     ticking = false;
   }
   window.addEventListener('scroll', function(){
@@ -1459,7 +1507,7 @@ body.is-loading .reveal{opacity:0}
     document.addEventListener('mousedown', function(){ ring.classList.add('is-press'); });
     document.addEventListener('mouseup', function(){ ring.classList.remove('is-press'); });
 
-    document.querySelectorAll('a, .card, .tag, .award, .meta').forEach(function(el){
+    document.querySelectorAll('a, button, .card, .tag, .award, .meta').forEach(function(el){
       el.addEventListener('mouseenter', function(){ ring.classList.add('is-hot'); });
       el.addEventListener('mouseleave', function(){ ring.classList.remove('is-hot'); });
     });
@@ -1499,6 +1547,104 @@ body.is-loading .reveal{opacity:0}
       cursorFrame();
       requestAnimationFrame(tick);
     })(t0);
+  }
+
+  /* ---------- copy the address ---------- */
+  var toast = document.getElementById('toast');
+  var spark = document.getElementById('spark');
+  var copyBtn = document.getElementById('copyMail');
+  var toastTimer;
+
+  function popAt(x, y, msg){
+    toast.textContent = msg;
+    toast.style.left = x + 'px';
+    toast.style.top = y + 'px';
+    spark.style.left = x + 'px';
+    spark.style.top = y + 'px';
+    toast.classList.remove('is-on');
+    spark.classList.remove('is-on');
+    void toast.offsetWidth;          /* restart the animation on a repeat click */
+    void spark.offsetWidth;
+    toast.classList.add('is-on');
+    spark.classList.add('is-on');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){
+      toast.classList.remove('is-on');
+      spark.classList.remove('is-on');
+    }, 2000);
+  }
+
+  if (copyBtn){
+    copyBtn.addEventListener('click', function(e){
+      var mail = copyBtn.getAttribute('data-mail');
+      var r = copyBtn.getBoundingClientRect();
+      /* keyboard activation reports 0,0, so fall back to the button itself */
+      var x = e.clientX || (r.left + r.width / 2);
+      var y = e.clientY || (r.top + r.height / 2);
+
+      function done(ok){ popAt(x, y, ok ? 'Copied ' + mail : mail); }
+
+      function legacy(){
+        var ta = document.createElement('textarea');
+        ta.value = mail;
+        ta.setAttribute('readonly', '');
+        ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+        document.body.appendChild(ta);
+        ta.select();
+        var ok = false;
+        try { ok = document.execCommand('copy'); } catch (err) { ok = false; }
+        document.body.removeChild(ta);
+        done(ok);
+      }
+
+      if (navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(mail).then(function(){ done(true); }, legacy);
+      } else legacy();
+    });
+  }
+
+  /* ---------- time to the bottom ---------- */
+  var timerNote = document.getElementById('timerNote');
+  var readStart = performance.now();
+  var timerShown = false;
+
+  function spellTime(ms){
+    var s = Math.max(1, Math.round(ms / 1000));
+    if (s < 60) return s + (s === 1 ? ' second' : ' seconds');
+    var m = Math.floor(s / 60), rest = s % 60;
+    var out = m + (m === 1 ? ' minute' : ' minutes');
+    if (m < 10 && rest) out += ' ' + rest + (rest === 1 ? ' second' : ' seconds');
+    return out;
+  }
+
+  function showTimeNote(){
+    if (timerShown || !timerNote) return;
+    timerShown = true;
+    var ms = performance.now() - readStart;
+    var spelled = spellTime(ms);
+    var line;
+    if (ms < 60000){
+      line = 'You reached the bottom in <b>' + spelled + '</b>. That was a skim, ' +
+             'which is fair. The short version: computer science at Stony Brook, ' +
+             'and a lot of orchestra before that.';
+    } else if (ms < 900000){
+      line = 'You reached the bottom in <b>' + spelled + '</b>. Thanks for actually ' +
+             'reading it. The button up top copies my email if you want to use it.';
+    } else {
+      line = 'You reached the bottom in <b>' + spelled + '</b>. Either that was an ' +
+             'extremely close read, or this tab sat open through lunch and you have ' +
+             'just come back to it. No judgement either way.';
+    }
+    timerNote.innerHTML = line;
+    requestAnimationFrame(function(){ timerNote.classList.add('is-on'); });
+  }
+
+  function checkBottom(){
+    if (timerShown) return;
+    var atEnd = pathMode
+      ? (pathLen > 0 && pathPos >= pathLen - 6)
+      : (window.pageYOffset + window.innerHeight >= document.documentElement.scrollHeight - 8);
+    if (atEnd) showTimeNote();
   }
 
   /* ---------- card spotlight ---------- */
