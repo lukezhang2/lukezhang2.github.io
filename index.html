@@ -1038,7 +1038,9 @@ body.is-loading .reveal{opacity:0}
   /* which way each turn leans while it descends; 'down' just carries straight on */
   var TURNS = ['down', 'right', 'down', 'left', 'down'];
   var pathPts = [], panelS = [];
-  var CURVE_STEPS = 30;
+  var CURVE_STEPS = 120;            /* fine enough that the bend reads as a curve, not facets */
+  var snaps = [], cueWorldY = 520;
+  var lastInput = 0, snapArmed = false;
   var pathLen = 0, pathPos = 0, pathTarget = 0, pathX = 0, pathY = 0;
   var pathMode = false;
 
@@ -1051,7 +1053,7 @@ body.is-loading .reveal{opacity:0}
   }
 
   function buildPath(){
-    pathPts = []; panelS = []; pathLen = 0;
+    pathPts = []; panelS = []; snaps = []; pathLen = 0;
     if (!pathMode){
       panels.forEach(function(p){
         p.style.left = ''; p.style.top = ''; p.style.visibility = '';
@@ -1065,6 +1067,9 @@ body.is-loading .reveal{opacity:0}
       if (n){
         var q = pathPts[n - 1];
         var dx = px - q.x, dy = py - q.y;
+        /* a turn ends exactly where the next panel begins; keeping both would
+           leave a zero length step in the table */
+        if (dx === 0 && dy === 0){ q.i = idx; return q.s; }
         s = q.s + Math.sqrt(dx * dx + dy * dy);
       }
       pathPts.push({ x: px, y: py, s: s, i: idx });
@@ -1077,6 +1082,7 @@ body.is-loading .reveal{opacity:0}
       p.style.top = y + 'px';
       p.style.visibility = '';
       p.panelH = p.offsetHeight;
+      p.px = x; p.py = y;          /* cached so the frame loop never parses styles */
       p.onScreen = true;
 
       /* the run through a panel stays straight, so text never slides sideways
@@ -1099,16 +1105,23 @@ body.is-loading .reveal{opacity:0}
            on both sides, which makes the whole route one continuous bend with
            no corner anywhere. Every turn descends, so nothing ever backs up. */
         var c1y = endY + vh * 0.42, c2y = endY + vh * 0.58;
+        var half = CURVE_STEPS >> 1;
         for (var t = 1; t <= CURVE_STEPS; t++){
           var u = t / CURVE_STEPS, m = 1 - u;
           var m2 = m * m, u2 = u * u;
           var bx = m2 * m * x + 3 * m2 * u * x + 3 * m * u2 * nx + u2 * u * nx;
           var by = m2 * m * endY + 3 * m2 * u * c1y + 3 * m * u2 * c2y + u2 * u * ny;
-          add(bx, by, u < 0.5 ? i : i + 1);
+          var sHere = add(bx, by, u < 0.5 ? i : i + 1);
+          /* the vertex of a leaning turn: both panels are on screen here, so it
+             is worth settling onto */
+          if (t === half && nx !== x) snaps.push(sHere);
         }
         x = nx; y = ny;
       }
     });
+
+    var hair = document.querySelector('#scrollCue span');
+    if (hair && panels[0]) cueWorldY = panels[0].py + hair.offsetTop + hair.offsetHeight;
 
     pathLen = pathPts.length ? pathPts[pathPts.length - 1].s : 0;
     pathTarget = Math.min(pathTarget, pathLen);
@@ -1149,8 +1162,8 @@ body.is-loading .reveal{opacity:0}
     var m = 2;
     for (var i = 0; i < panels.length; i++){
       var p = panels[i];
-      var px = (parseFloat(p.style.left) || 0) - pathX;
-      var py = (parseFloat(p.style.top) || 0) - pathY;
+      var px = p.px - pathX;
+      var py = p.py - pathY;
       var on = px < vw + m && px + vw > -m && py < vh + m && py + p.panelH > -m;
       if (on !== p.onScreen){
         p.onScreen = on;
@@ -1163,12 +1176,40 @@ body.is-loading .reveal{opacity:0}
 
   function nudge(d){
     pathTarget = Math.max(0, Math.min(pathLen, pathTarget + d));
+    lastInput = performance.now();
+    snapArmed = true;
+  }
+
+  /* Once the reader stops near the middle of a leaning turn, settle exactly onto
+     it. That is the one spot where the panel being left and the panel being
+     entered are both fully in frame. */
+  function trySnap(){
+    if (!snapArmed || !snaps.length) return;
+    if (performance.now() - lastInput < 180) return;
+    snapArmed = false;
+    /* judged against where the reader was heading rather than where the ease
+       has currently reached, so it decides the moment input stops */
+    var range = vh * 0.62, best = -1, bestD = 1e9;
+    for (var i = 0; i < snaps.length; i++){
+      var d = Math.abs(snaps[i] - pathTarget);
+      if (d < bestD){ bestD = d; best = i; }
+    }
+    if (best >= 0 && bestD < range) pathTarget = snaps[best];
   }
 
   function pathFrame(k){
     if (!pathMode) return;
+    trySnap();
     var d = pathTarget - pathPos;
-    if (Math.abs(d) < 0.05){ pathPos = pathTarget; return; }
+    if (Math.abs(d) < 0.05){
+      if (pathPos !== pathTarget){
+        pathPos = pathTarget;
+        applyPath();
+        onScroll();
+        syncReveals();      /* catch up once on settle, never mid-motion */
+      }
+      return;
+    }
     pathPos += d * Math.min(1, 0.13 * k);
     applyPath();
     onScroll();
@@ -1197,8 +1238,8 @@ body.is-loading .reveal{opacity:0}
       var k = e.key;
       if (k === 'ArrowDown' || k === 'PageDown' || k === ' '){ nudge(step); e.preventDefault(); }
       else if (k === 'ArrowUp' || k === 'PageUp'){ nudge(-step); e.preventDefault(); }
-      else if (k === 'Home'){ pathTarget = 0; e.preventDefault(); }
-      else if (k === 'End'){ pathTarget = pathLen; e.preventDefault(); }
+      else if (k === 'Home'){ pathTarget = 0; lastInput = performance.now(); snapArmed = false; e.preventDefault(); }
+      else if (k === 'End'){ pathTarget = pathLen; lastInput = performance.now(); snapArmed = false; e.preventDefault(); }
     });
   }
 
@@ -1255,7 +1296,19 @@ body.is-loading .reveal{opacity:0}
   var lastCol = null;
 
   /* measured off the cue's hairline itself, so strands leave that exact stroke */
+  /* Runs every frame, so it must not touch the layout engine: reading a box
+     here, straight after the transform is written, forces a synchronous layout
+     on each frame and is what made the route feel rough. Both figures come from
+     values measured once when the route was built. */
   function readSource(){
+    if (pathMode && pathPts.length){
+      /* the column belongs to the panel the route is on, so the stream stays
+         put rather than tracking the viewport sideways */
+      var pl = panels[pointAt(pathPos).i];
+      srcX = (pl ? pl.px : 0) + vw / 2;
+      srcDocY = cueWorldY;
+      return;
+    }
     var cue = document.getElementById('scrollCue');
     var hair = cue && cue.querySelector('span');
     var el = hair || cue;
@@ -1263,19 +1316,10 @@ body.is-loading .reveal{opacity:0}
     srcDocY = 520;
     if (el){
       var r = el.getBoundingClientRect();
-      if (r.height) {
-        /* both axes in page space: the column of strands then belongs to the
-           spot it fell from, rather than tracking the viewport sideways */
-        srcX = r.left + r.width / 2 + scrollSide();
+      if (r.height){
+        srcX = r.left + r.width / 2;
         srcDocY = r.bottom + scrollPos();
       }
-    }
-    /* Anchor the column to whichever panel the route is on. It holds still
-       within a column, so the stream never slides along with the viewport, and
-       it only shifts between columns, which happens off-screen mid-turn. */
-    if (pathMode && pathPts.length){
-      var pl = panels[pointAt(pathPos).i];
-      if (pl) srcX = (parseFloat(pl.style.left) || 0) + vw / 2;
     }
   }
 
@@ -1364,10 +1408,11 @@ body.is-loading .reveal{opacity:0}
       var sy = p.y - top;
       var sx = p.x - left;
 
-      /* Carried off this column by a turn. Re-home it to the current column so
-         the new one fills; it is already out of sight, so nothing appears to
-         slide sideways. */
-      if (sx < -240 || sx > vw + 240){
+      /* Out of sight for good: carried off this column by a turn, or left far
+         behind by a fast jump down the route. Re-home rather than wait for it
+         to age out, so the field refills at once and nothing appears to slide
+         sideways while doing it. */
+      if (sx < -240 || sx > vw + 240 || sy + len < -vh * 1.2){
         if (lines.length > LINE_COUNT){ lines.splice(i, 1); i--; }
         else lines[i] = makeLine(true);
         continue;
@@ -1599,6 +1644,7 @@ body.is-loading .reveal{opacity:0}
       if (!pathMode) return;
       var href = a.getAttribute('href');
       e.preventDefault();
+      snapArmed = false;
       if (href === '#top'){ pathTarget = 0; return; }
       var el = document.querySelector(href);
       var idx = el ? panels.indexOf(el) : -1;
@@ -1652,19 +1698,12 @@ body.is-loading .reveal{opacity:0}
   if (!reduce){
     var t0 = performance.now();
     var prev = t0;
-    var revealTick = 0;
     (function tick(now){
       var dt = now - prev;
       prev = now;
       watchPerf(dt);
       var k = Math.min(dt / 16.67, 3);
       pathFrame(k);
-      /* IntersectionObserver lags behind a moving transform, so nudge the
-         reveals a few times a second while the route is in motion */
-      if (pathMode && Math.abs(pathTarget - pathPos) > 0.5){
-        revealTick += dt;
-        if (revealTick > 110){ revealTick = 0; syncReveals(); }
-      }
       riverFrame((now - t0) / 1000, dt);
       cursorFrame();
       requestAnimationFrame(tick);
