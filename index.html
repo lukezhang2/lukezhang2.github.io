@@ -248,6 +248,45 @@ body.path .panel:not(.hero){
   padding:clamp(76px,9vh,96px) 0 clamp(40px,5vh,56px);
 }
 body.path .sec-head{margin-bottom:clamp(22px,3.2vh,34px)}
+
+/* A slide has to carry a whole screen. These three sections are light on
+   content and at their scrolling size they left most of the panel bare, so on
+   the route they are given the room instead of leaving it empty. */
+body.path .skills{gap:20px}
+body.path .skills .card{
+  display:flex;flex-direction:column;
+  min-height:clamp(240px,68vh,760px);
+  padding:clamp(24px,2.6vw,34px);
+}
+/* the index sits behind the card as its own watermark, which gives the middle
+   of a tall card something to be rather than a hole between two blocks of text */
+body.path .skills .card::after{
+  content:attr(data-idx);position:absolute;left:50%;top:50%;z-index:0;
+  transform:translate(-50%,-50%);
+  font-family:var(--font-display);font-weight:600;line-height:1;
+  font-size:clamp(6.5rem,13vw,12rem);letter-spacing:-.06em;
+  color:rgba(255,255,255,.035);pointer-events:none;
+}
+body.path .skill-top{margin-bottom:20px}
+body.path .skill-name{font-size:clamp(1.45rem,2.5vw,2rem)}
+body.path .skill-desc{font-size:.95rem}
+body.path .skill-src{margin-top:auto;padding-top:16px}
+
+/* two to a row, with the hackathon win taking the full width at the foot of
+   the list so the odd seventh is a deliberate close rather than a gap */
+body.path .awards{grid-template-columns:1fr 1fr;gap:16px}
+body.path .award{padding:22px 24px;min-height:clamp(96px,15.5vh,190px)}
+body.path .award:last-child{grid-column:1/-1}
+body.path .award-mark{width:46px;height:46px;border-radius:13px}
+body.path .award-mark svg{width:20px;height:20px}
+body.path .award-name{font-size:1.02rem}
+body.path .award-sub{font-size:.68rem;margin-top:4px}
+
+/* the closing slide holds the card in the middle and drops the footer to the
+   bottom edge, rather than stacking both at the top of an empty screen */
+body.path #contact .panel-in{align-self:stretch;display:flex;flex-direction:column;justify-content:center}
+body.path #contact footer{margin-top:auto}
+body.path .contact-card{padding:clamp(46px,9vh,96px) clamp(24px,4vw,52px)}
 /* A short window would otherwise have to be scaled hard to keep a section on
    one screen, so spend the space that is only there for looks first. */
 @media(max-height:790px){
@@ -453,25 +492,25 @@ body.path footer{margin-top:44px}
 .course-label b{margin-left:auto;font-weight:400;color:var(--muted-dim);letter-spacing:.1em}
 
 .tags{display:flex;flex-direction:column;align-items:stretch;gap:7px}
+/* Every course carries the same weight. Singling some out as "key" left the
+   rest looking like filler, which is not what a list of courses taken means. */
 .tag{
-  display:flex;align-items:flex-start;line-height:1.35;
+  display:block;line-height:1.35;
   font-size:.78rem;padding:7px 13px;border-radius:10px;
-  color:rgba(var(--c),.72);
-  border:1px solid rgba(var(--c),.15);
-  background:rgba(var(--c),.032);
+  color:rgba(var(--c),.9);
+  border:1px solid rgba(var(--c),.24);
+  background:rgba(var(--c),.055);
   transition:.25s var(--ease);
 }
 .tag:hover{
-  color:rgb(var(--c));border-color:rgba(var(--c),.48);
-  background:rgba(var(--c),.1);transform:translateY(-1px);
+  color:rgb(var(--c));border-color:rgba(var(--c),.5);
+  background:rgba(var(--c),.11);transform:translateY(-1px);
 }
-.tag.is-key{
-  color:rgba(var(--c),.94);font-weight:500;
-  border-color:rgba(var(--c),.32);background:rgba(var(--c),.072);
-}
-.tag.is-key::before{
-  content:'';width:4px;height:4px;border-radius:50%;margin:.5em 8px 0 0;flex:none;
-  background:rgb(var(--c));box-shadow:0 0 6px rgba(var(--c),.8);
+/* where a course was taken, when that is not the high school */
+.tag i{
+  font-style:normal;white-space:nowrap;
+  font-family:var(--font-mono);font-size:.8em;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--muted-dim);margin-left:7px;
 }
 
 /* ============ ACTIVITIES ============ */
@@ -528,6 +567,11 @@ body.path footer{margin-top:44px}
 .skill-name{font-family:var(--font-display);font-size:1.3rem;font-weight:600;letter-spacing:-.02em}
 .skill-idx{font-family:var(--font-mono);font-size:.7rem;color:var(--muted-dim)}
 .skill-desc{color:var(--muted);font-size:.89rem}
+.skill-src{
+  font-family:var(--font-mono);font-size:.64rem;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--muted-dim);border-top:1px solid var(--border);padding-top:13px;margin-top:16px;
+}
+.skill-top,.skill-desc,.skill-src{position:relative;z-index:1}
 
 /* ============ CONTACT ============ */
 .contact-card{
@@ -815,18 +859,18 @@ body.is-loading .reveal{opacity:0}
         <div class="course-group g-cs">
           <div class="course-label">Computer Science <b>06</b></div>
           <div class="tags">
-            <span class="tag is-key">AP Computer Science A</span>
-            <span class="tag is-key">AP Computer Science Principles</span>
+            <span class="tag">AP Computer Science A</span>
+            <span class="tag">AP Computer Science Principles</span>
             <span class="tag">Visual Basic I</span>
             <span class="tag">Visual Basic II</span>
-            <span class="tag is-key">Programming Abstractions in C++ &middot; Stanford</span>
-            <span class="tag is-key">Data Science &middot; Stanford</span>
+            <span class="tag">Programming Abstractions in C++ <i>Stanford</i></span>
+            <span class="tag">Data Science <i>Stanford</i></span>
           </div>
         </div>
         <div class="course-group g-math">
           <div class="course-label">Mathematics <b>03</b></div>
           <div class="tags">
-            <span class="tag is-key">AP Calculus BC</span>
+            <span class="tag">AP Calculus BC</span>
             <span class="tag">AP Statistics</span>
             <span class="tag">Precalculus Honors</span>
           </div>
@@ -988,26 +1032,29 @@ body.is-loading .reveal{opacity:0}
     </div>
 
     <div class="skills">
-      <div class="card reveal">
+      <div class="card reveal" data-idx="01">
         <div class="skill-top">
           <div class="skill-name">Python</div>
           <div class="skill-idx">01</div>
         </div>
         <p class="skill-desc">Primary teaching language for beginner students at LIYD, and the entry point from block-based Scratch into text-based code.</p>
+        <div class="skill-src">Long Island Youth Development</div>
       </div>
-      <div class="card reveal" style="--d:.08s">
+      <div class="card reveal" data-idx="02" style="--d:.08s">
         <div class="skill-top">
           <div class="skill-name">Java</div>
           <div class="skill-idx">02</div>
         </div>
         <p class="skill-desc">Built through AP Computer Science A coursework, covering object-oriented design, data structures, and algorithms.</p>
+        <div class="skill-src">AP Computer Science A</div>
       </div>
-      <div class="card reveal" style="--d:.16s">
+      <div class="card reveal" data-idx="03" style="--d:.16s">
         <div class="skill-top">
           <div class="skill-name">C++</div>
           <div class="skill-idx">03</div>
         </div>
         <p class="skill-desc">Studied at Stanford University Summer Session through Programming Abstractions, covering recursion, pointers, and abstract data types.</p>
+        <div class="skill-src">Stanford University Summer Session</div>
       </div>
     </div>  </div>
   </section>
@@ -1874,7 +1921,7 @@ body.is-loading .reveal{opacity:0}
     var ms = performance.now() - readStart;
     var spelled = spellTime(ms);
     var line;
-    if (ms < 2000){
+    if (ms <= 3000){
       line = 'You reached the bottom in <b>' + spelled + '</b>. Did the website even ' +
              'load in yet? Well, if you are seeing this, I guess it did.';
     } else if (ms < 10000){
