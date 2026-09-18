@@ -589,6 +589,7 @@ body.path footer{margin-top:44px}
 .contact-card h2{font-family:var(--font-display);font-size:clamp(1.7rem,4.5vw,2.6rem);font-weight:600;letter-spacing:-.03em;margin-bottom:14px}
 .contact-card p{color:var(--muted);max-width:44ch;margin:0 auto 30px}
 .contact-mail{
+  position:relative;
   display:inline-flex;align-items:center;gap:11px;
   font-family:var(--font-mono);font-size:clamp(.82rem,2.4vw,1.02rem);
   color:var(--text);
@@ -598,7 +599,7 @@ body.path footer{margin-top:44px}
 }
 .contact-mail svg{width:16px;height:16px;stroke:var(--accent);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .contact-mail:hover{background:rgba(111,143,255,.17);border-color:rgba(111,143,255,.55);transform:translateY(-2px)}
-.contact-loc{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted-dim);margin-top:26px}
+.contact-loc{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.16em;white-space:nowrap;text-transform:uppercase;color:var(--muted-dim);margin-top:26px}
 
 /* ============ FOOTER ============ */
 footer{
@@ -663,6 +664,180 @@ footer{
 .reveal.out-up{opacity:0;transform:translateY(-18px)}
 .hero .reveal{transition-delay:calc(var(--d,0s) + .1s)}
 body.is-loading .reveal{opacity:0}
+
+/* ============ SECTION ENTRANCES ============
+   Every section plays its own arrival, so travelling the route feels like
+   turning to a new page rather than scrolling one long one. Everything here is
+   transform and opacity, which keeps it off the layout path, and the whole
+   layer is gated behind .anim-on so a page whose script never ran is never
+   left holding invisible content.
+
+   Three states, and the split matters. .is-armed is a section that has not
+   been reached yet and holds its content hidden. .is-live is the one playing,
+   and its keyframes override the hidden state because animations outrank
+   normal declarations; `both` fill is what makes the end state stick. A
+   section that has been visited carries neither, so it simply stays visible.
+   Hiding on the way out instead would blank the section you are leaving while
+   it is still halfway up the screen. */
+
+/* the head is common ground: each section titles itself the same way, and the
+   hairline draws itself out from under the title */
+body.anim-on .panel.is-armed .sec-head{opacity:0}
+body.anim-on .panel.is-armed .sec-rule{transform:scaleX(0)}
+body.anim-on .panel .sec-rule{transform-origin:left}
+body.anim-on .panel.is-live .sec-head{animation:headIn .62s var(--ease) both}
+body.anim-on .panel.is-live .sec-rule{animation:ruleDraw .85s var(--ease) .18s both}
+@keyframes headIn{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:none}}
+@keyframes ruleDraw{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes riseIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+
+/* ---- 00 hero: the column rises and the orbit irises open ---- */
+body.anim-on .hero.is-armed .hero-grid > div:first-child > *,
+body.anim-on .hero.is-armed .orbit-wrap,
+body.anim-on .hero.is-armed .scroll-cue{opacity:0}
+body.anim-on .hero.is-live .hero-grid > div:first-child > *{
+  animation:heroRise .82s var(--ease) both;animation-delay:calc(var(--d,0s) + .12s);
+}
+body.anim-on .hero.is-live .orbit-wrap{animation:orbIris 1.15s var(--ease) .26s both}
+body.anim-on .hero.is-live .orbit-glow{animation:glowUp 1.6s var(--ease) .4s both}
+body.anim-on .hero.is-live .scroll-cue{animation:fadeIn .7s ease 1.05s both}
+@keyframes heroRise{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+@keyframes orbIris{from{opacity:0;transform:scale(.74) rotate(-14deg)}to{opacity:1;transform:none}}
+@keyframes glowUp{from{opacity:0;transform:scale(.5)}to{opacity:1;transform:none}}
+
+/* ---- 01 education: a reading light runs across the transcript ---- */
+body.anim-on #education.is-armed .edu-schools > .card,
+body.anim-on #education.is-armed .edu-grid > .card,
+body.anim-on #education.is-armed .card-label,
+body.anim-on #education.is-armed .course-group,
+body.anim-on #education.is-armed .tag{opacity:0}
+body.anim-on #education.is-live .edu-schools > .card{
+  animation:eduDrop .72s cubic-bezier(.22,1,.36,1) both;animation-delay:calc(var(--i,0)*.11s);
+}
+body.anim-on #education.is-live .edu-grid > .card{animation:riseIn .7s var(--ease) .2s both}
+body.anim-on #education.is-live .card-label{animation:fadeIn .5s ease .34s both}
+body.anim-on #education.is-live .course-group{
+  animation:riseIn .55s var(--ease) both;animation-delay:calc(.4s + var(--g,0)*.12s);
+}
+body.anim-on #education.is-live .tag{
+  animation:tagIn .44s var(--ease) both;
+  animation-delay:calc(.5s + var(--g,0)*.12s + var(--i,0)*.055s);
+}
+/* the light itself, one pass left to right over the coursework */
+body.anim-on #education.is-live .edu-grid > .card::after{
+  content:'';position:absolute;top:0;bottom:0;left:0;width:150px;pointer-events:none;z-index:2;
+  background:linear-gradient(90deg,transparent,rgba(150,180,255,.12),transparent);
+  animation:scanX 1.3s cubic-bezier(.36,0,.2,1) .34s both;
+}
+@keyframes eduDrop{from{opacity:0;transform:translateY(-28px) scale(.975)}to{opacity:1;transform:none}}
+@keyframes tagIn{from{opacity:0;transform:translateX(-16px)}to{opacity:1;transform:none}}
+@keyframes scanX{
+  0%{opacity:0;transform:translateX(-170px)}
+  18%{opacity:1}
+  86%{opacity:1}
+  100%{opacity:0;transform:translateX(1320px)}
+}
+
+/* ---- 02 activities: the four cards converge from their own corners ---- */
+body.anim-on #activities.is-armed .act-list > .card,
+body.anim-on #activities.is-armed .bullets li{opacity:0}
+body.anim-on #activities.is-armed .act-list > .card::after{transform:scaleY(0)}
+body.anim-on #activities .act-list > .card::after{transform-origin:top}
+body.anim-on #activities.is-live .act-list > .card{
+  animation:actIn .76s cubic-bezier(.22,1,.36,1) both;animation-delay:calc(var(--i,0)*.085s);
+}
+body.anim-on #activities.is-live .act-list > .card::after{
+  animation:railDraw .6s var(--ease) both;animation-delay:calc(.36s + var(--i,0)*.085s);
+}
+body.anim-on #activities.is-live .bullets li{
+  animation:tagIn .42s var(--ease) both;
+  animation-delay:calc(.46s + var(--i,0)*.085s + var(--j,0)*.07s);
+}
+@keyframes actIn{
+  from{opacity:0;transform:translate(var(--fx,0),var(--fy,0)) scale(.93)}
+  to{opacity:1;transform:none}
+}
+@keyframes railDraw{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+
+/* ---- 03 awards: a light passes down the list and glances off each one ---- */
+body.anim-on #awards.is-armed .award{opacity:0}
+body.anim-on #awards.is-live .award{
+  animation:awardIn .62s var(--ease) both;animation-delay:calc(var(--i,0)*.08s);
+}
+body.anim-on #awards.is-live .award::before{
+  content:'';position:absolute;inset:0;pointer-events:none;z-index:2;border-radius:inherit;
+  background:linear-gradient(104deg,transparent 38%,rgba(255,255,255,.085) 50%,transparent 62%);
+  background-size:280% 100%;
+  animation:shimmer .9s ease both;animation-delay:calc(.24s + var(--i,0)*.08s);
+}
+/* the one that closes the list gets the light held on it a moment longer */
+body.anim-on #awards.is-live .award:last-child{
+  animation:awardIn .66s var(--ease) calc(var(--i,0)*.08s) both,
+            awardHold 1.3s ease calc(var(--i,0)*.08s + .3s) both;
+}
+@keyframes awardIn{from{opacity:0;transform:translateY(24px) scale(.985)}to{opacity:1;transform:none}}
+@keyframes shimmer{from{background-position:190% 0}to{background-position:-90% 0}}
+@keyframes awardHold{
+  0%{border-color:var(--border)}
+  30%{border-color:rgba(var(--c),.55)}
+  100%{border-color:var(--border)}
+}
+
+/* ---- 04 languages: the names resolve out of noise, the index settles ---- */
+body.anim-on #languages.is-armed .skills > .card,
+body.anim-on #languages.is-armed .skill-desc,
+body.anim-on #languages.is-armed .skill-src{opacity:0}
+body.path.anim-on #languages.is-armed .skills > .card::after{opacity:0}
+body.anim-on #languages.is-live .skills > .card{
+  animation:langCard .7s cubic-bezier(.22,1,.36,1) both;animation-delay:calc(var(--i,0)*.12s);
+}
+body.anim-on #languages.is-live .skill-desc{
+  animation:descIn .62s var(--ease) both;animation-delay:calc(.3s + var(--i,0)*.12s);
+}
+body.anim-on #languages.is-live .skill-src{
+  animation:riseIn .55s var(--ease) both;animation-delay:calc(.54s + var(--i,0)*.12s);
+}
+body.path.anim-on #languages.is-live .skills > .card::after{
+  animation:idxSettle 1.2s var(--ease) both;animation-delay:calc(.32s + var(--i,0)*.12s);
+}
+@keyframes langCard{from{opacity:0;transform:translateY(36px)}to{opacity:1;transform:none}}
+@keyframes descIn{from{opacity:0;clip-path:inset(0 0 100% 0)}to{opacity:1;clip-path:inset(0 0 0 0)}}
+@keyframes idxSettle{
+  from{opacity:0;transform:translate(-50%,-50%) scale(1.55)}
+  to{opacity:1;transform:translate(-50%,-50%) scale(1)}
+}
+
+/* ---- 05 contact: the card blooms and the address pings twice ---- */
+body.anim-on #contact.is-armed .contact-card,
+body.anim-on #contact.is-armed .contact-card h2,
+body.anim-on #contact.is-armed .contact-card p,
+body.anim-on #contact.is-armed .contact-mail,
+body.anim-on #contact.is-armed .contact-loc,
+body.anim-on #contact.is-armed .timer-note,
+body.anim-on #contact.is-armed footer{opacity:0}
+body.anim-on #contact.is-live .contact-card{animation:bloom .85s var(--ease) both}
+body.anim-on #contact.is-live .contact-card::after{animation:glowUp 1.5s var(--ease) .1s both}
+body.anim-on #contact.is-live .contact-card h2{animation:riseIn .65s var(--ease) .16s both}
+body.anim-on #contact.is-live .contact-card p{animation:riseIn .65s var(--ease) .26s both}
+body.anim-on #contact.is-live .contact-mail{animation:riseIn .6s var(--ease) .36s both}
+body.anim-on #contact.is-live .contact-loc{animation:trackIn .9s var(--ease) .5s both}
+body.anim-on #contact.is-live .timer-note{animation:fadeIn .7s ease .74s both}
+body.anim-on #contact.is-live footer{animation:riseIn .7s var(--ease) .84s both}
+body.anim-on #contact.is-live .contact-mail::before,
+body.anim-on #contact.is-live .contact-mail::after{
+  content:'';position:absolute;inset:0;border-radius:99px;pointer-events:none;
+  border:1px solid rgba(111,143,255,.55);
+  animation:ping 1.6s cubic-bezier(.2,.7,.3,1) .55s both;
+}
+body.anim-on #contact.is-live .contact-mail::after{animation-delay:1.05s}
+@keyframes bloom{from{opacity:0;transform:scale(.975)}to{opacity:1;transform:none}}
+@keyframes trackIn{from{opacity:0;letter-spacing:.62em}to{opacity:1;letter-spacing:.16em}}
+@keyframes ping{
+  0%{opacity:0;transform:scale(1)}
+  14%{opacity:.7}
+  100%{opacity:0;transform:scale(1.5)}
+}
 
 @media(prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
@@ -1120,6 +1295,7 @@ body.is-loading .reveal{opacity:0}
     document.body.classList.remove('is-loading');
     document.body.classList.add('is-ready');
     syncReveals();
+    setLive(pathMode && stops[stopAt] ? stops[stopAt].i : 0);
     readStart = performance.now();   /* the clock starts when the page is actually readable */
     setTimeout(function(){ if (loader.parentNode) loader.parentNode.removeChild(loader); }, 1400);
   }
@@ -1151,6 +1327,109 @@ body.is-loading .reveal{opacity:0}
     revealables.forEach(function(el){ io.observe(el); });
   } else {
     revealables.forEach(function(el){ el.classList.add('in'); });
+  }
+
+  /* ---------- section entrances ----------
+     One section is live at a time and its entrance runs from the start. The
+     class comes off when you leave, which is what lets it play again on the
+     way back. Stagger indices are stamped once here rather than written out
+     as nth-child rules, so adding a course or an award needs no CSS. */
+  var livePanel = -1;
+
+  function stamp(sel, prop, root){
+    var list = (root || document).querySelectorAll(sel);
+    for (var i = 0; i < list.length; i++) list[i].style.setProperty(prop, i);
+    return list;
+  }
+
+  function stampAnimVars(){
+    stamp('.edu-schools > .card', '--i');
+    stamp('.award', '--i');
+    stamp('#languages .skills > .card', '--i');
+    var groups = stamp('.course-group', '--g');
+    for (var g = 0; g < groups.length; g++) stamp('.tag', '--i', groups[g]);
+    /* each card enters from the corner it sits in, so the four meet in the
+       middle rather than all sliding the same way */
+    var cards = stamp('.act-list > .card', '--i');
+    for (var c = 0; c < cards.length; c++){
+      cards[c].style.setProperty('--fx', (c % 2 ? 46 : -46) + 'px');
+      cards[c].style.setProperty('--fy', (c > 1 ? 34 : -34) + 'px');
+      stamp('.bullets li', '--j', cards[c]);
+    }
+  }
+
+  var NOISE = 'ABCDEFGHJKLMNPQRSTUVWXYZ0123456789+#<>{}/*';
+
+  function noiseFor(real, kept){
+    var out = real.slice(0, kept);
+    for (var k = kept; k < real.length; k++){
+      out += real.charAt(k) === ' ' ? ' ' : NOISE.charAt((Math.random() * NOISE.length) | 0);
+    }
+    return out;
+  }
+
+  /* the language names resolve out of noise, which is the one thing here that
+     keyframes cannot do: it has to land on the real string. It starts already
+     scrambled rather than blank, and a timer guarantees the real text even if
+     the frame loop never gets to run, so a name can never be left as rubble. */
+  function scrambleNames(){
+    if (reduce) return;
+    var names = document.querySelectorAll('#languages .skill-name');
+    for (var n = 0; n < names.length; n++){
+      (function(el, idx){
+        var real = el.getAttribute('data-real');
+        if (real === null){ real = el.textContent; el.setAttribute('data-real', real); }
+        var id = (el._runId || 0) + 1;
+        el._runId = id;
+        var wait = 280 + idx * 130, span = 560;
+        var begin = performance.now() + wait;
+        el.textContent = noiseFor(real, 0);
+        function tick(){
+          if (el._runId !== id) return;             /* a newer run has taken over */
+          var t = performance.now() - begin;
+          if (t < 0){ requestAnimationFrame(tick); return; }
+          var u = Math.min(1, t / span);
+          el.textContent = noiseFor(real, Math.floor(real.length * u));
+          if (u < 1) requestAnimationFrame(tick); else el.textContent = real;
+        }
+        requestAnimationFrame(tick);
+        setTimeout(function(){ if (el._runId === id) el.textContent = real; }, wait + span + 400);
+      })(names[n], n);
+    }
+  }
+
+  function armPanels(){
+    if (reduce) return;
+    for (var i = 0; i < panels.length; i++) panels[i].classList.add('is-armed');
+  }
+
+  function setLive(i){
+    if (i === livePanel || reduce) return;
+    /* the section being left keeps its content: it is still on screen for the
+       rest of the move, and re-arming it there would blank it mid flight */
+    if (panels[livePanel]) panels[livePanel].classList.remove('is-live');
+    livePanel = i;
+    var p = panels[i];
+    if (!p) return;
+    p.classList.remove('is-armed');
+    p.classList.add('is-live');
+    if (p.id === 'languages') scrambleNames();
+  }
+
+  /* on the route the live section is whichever stop the travel is bound for,
+     picked up halfway so the panel is assembling as it arrives rather than
+     sliding in blank and then starting. Off the route it is whichever panel
+     holds the middle of the window. */
+  function liveFromScroll(){
+    if (pathMode) return;
+    var mid = window.innerHeight / 2, best = -1, bestD = Infinity;
+    for (var i = 0; i < panels.length; i++){
+      var r = panels[i].getBoundingClientRect();
+      if (r.bottom < 0 || r.top > window.innerHeight) continue;
+      var d = Math.abs((r.top + r.bottom) / 2 - mid);
+      if (d < bestD){ bestD = d; best = i; }
+    }
+    if (best >= 0) setLive(best);
   }
 
   /* ---------- path navigation ----------
@@ -1286,9 +1565,18 @@ body.is-loading .reveal{opacity:0}
     });
 
     pathLen = pathPts.length ? pathPts[pathPts.length - 1].s : 0;
-    pathTarget = Math.min(pathTarget, pathLen);
-    pathPos = Math.min(pathPos, pathLen);
-    stopAt = nearestStop(pathPos);
+    /* A rebuild lands here from a resize and from every tab switch, and both
+       can happen mid move. Re-deriving the stop from the current distance
+       abandoned where the move was going and dropped the reader back on the
+       section they had just left; after a resize that distance does not even
+       mean the same place any more, since every panel has moved. Settling on
+       the stop we were bound for is right in both cases. */
+    stopAt = Math.max(0, Math.min(stops.length - 1, stopAt));
+    pathPos = pathTarget = stops.length ? stops[stopAt].s : 0;
+    tweening = false;
+    /* settling here skips the frame loop, so the section still has to be told
+       it is on. Not before the curtain, or it would play behind it. */
+    if (opened && stops.length) setLive(stops[stopAt].i);
     buildRail();
     applyPath();
   }
@@ -1370,6 +1658,7 @@ body.is-loading .reveal{opacity:0}
     tweenAge += dt;
     var u = Math.min(1, tweenAge / tweenFor);
     var e = u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
+    if (u >= 0.45 && stops[stopAt]) setLive(stops[stopAt].i);
     pathPos = tweenFrom + (tweenTo - tweenFrom) * e;
     applyPath();
     onScroll();
@@ -1377,6 +1666,7 @@ body.is-loading .reveal{opacity:0}
       tweening = false;
       pathPos = tweenTo;
       syncReveals();      /* catch up once on arrival, never mid-flight */
+      if (stops[stopAt]) setLive(stops[stopAt].i);
     }
   }
 
@@ -1725,12 +2015,16 @@ body.is-loading .reveal{opacity:0}
     nav.classList.toggle('is-stuck', y > 40);
     nav.classList.toggle('is-hidden', y > 420 && y > lastY);
     lastY = y;
+    liveFromScroll();
     checkBottom();
     ticking = false;
   }
   window.addEventListener('scroll', function(){
     if (!ticking){ window.requestAnimationFrame(onScroll); ticking = true; }
   }, { passive: true });
+  if (!reduce) document.body.classList.add('anim-on');
+  stampAnimVars();
+  armPanels();
   sizeCanvases();
   onScroll();
 
