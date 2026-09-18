@@ -1650,7 +1650,16 @@ body.anim-on #contact.is-live .contact-mail::after{animation-delay:1.05s}
     pathTarget = tweenTo;
   }
 
-  function step(dir){ goToStop(stopAt + dir); }
+  /* A move in flight takes no input. Stepping again before arrival queued the
+     next page up behind the current one, so a flick could commit you onward
+     while it was still carrying you, and a held arrow key ran away down the
+     route. Every gesture path goes through here, so the wheel, a swipe and the
+     keyboard are all covered. Clicking the rail is not stepping and still
+     re-aims a move in flight, which is what a reader means by it. */
+  function step(dir){
+    if (tweening) return;
+    goToStop(stopAt + dir);
+  }
   function goToPanel(i){ goToStop(nearestStop(panelStart(i))); }
 
   function pathFrame(dt){
@@ -1671,8 +1680,9 @@ body.anim-on #contact.is-live .contact-mail::after{animation-delay:1.05s}
   }
 
   if (!reduce){
-    /* One gesture, one screen. A quiet gap ends a gesture; a momentum tail has
-       no gaps, so it cannot page again on its own. */
+    /* One gesture, one screen, and not until the last one has landed. A quiet
+       gap ends a gesture; a momentum tail has no gaps, so it cannot page again
+       on its own. */
     /* A first touch only needs a nudge; carrying on through a second screen
        without lifting asks for a good deal more, which a decaying tail will not
        supply once the travel it already caused has finished. */
