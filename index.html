@@ -227,7 +227,7 @@ body.path .progress{display:none}        /* the rail carries progress instead */
 /* ============ LAYOUT ============ */
 .world{position:relative;z-index:1;display:block}
 .panel{position:relative;padding:clamp(72px,11vw,128px) 0}
-.panel-in{max-width:1120px;margin:0 auto;padding:0 var(--gutter)}
+.panel-in{position:relative;z-index:1;max-width:1120px;margin:0 auto;padding:0 var(--gutter)}
 
 /* Path mode lays the panels out on a 2D canvas and glides the viewport along a
    down/right/down/left route. Falls back to ordinary stacked scrolling when the
@@ -665,6 +665,36 @@ footer{
 .hero .reveal{transition-delay:calc(var(--d,0s) + .1s)}
 body.is-loading .reveal{opacity:0}
 
+/* ============ PLANETS ============
+   A different world behind each section, faint enough to read as texture
+   rather than as a picture. Screen blending drops the black these were
+   photographed against, so only the lit part of the planet is added to the
+   page; a radial mask fades the disc out well before the edge of its own
+   frame, so the photograph never reads as a rectangle. Credits are in the
+   markup above the hero. */
+.planet{
+  position:absolute;z-index:0;pointer-events:none;
+  width:var(--pw,46vw);aspect-ratio:var(--pa,1);
+  background-repeat:no-repeat;background-size:contain;background-position:center;
+  mix-blend-mode:screen;opacity:var(--po,.13);
+  -webkit-mask-image:radial-gradient(closest-side circle at 50% 50%,#000 52%,transparent 86%);
+  mask-image:radial-gradient(closest-side circle at 50% 50%,#000 52%,transparent 86%);
+}
+.hero .planet      {--pw:52vw;--pa:.8;--po:.17;background-image:url(img/jupiter.jpg);left:-15vw;bottom:-16vw}
+#education .planet {--pw:44vw;--po:.18;background-image:url(img/mars.jpg);right:-11vw;top:-12vw}
+#activities .planet{--pw:50vw;--pa:.8;--po:.16;background-image:url(img/saturn.jpg);left:-14vw;bottom:-16vw}
+#awards .planet    {--pw:42vw;--po:.18;background-image:url(img/uranus.jpg);right:-10vw;bottom:-14vw}
+#languages .planet {--pw:44vw;--po:.17;background-image:url(img/neptune.jpg);left:-12vw;top:-12vw}
+/* the closing card covers the middle of its slide, so Earth sits off the
+   corner where it can actually be seen rather than behind it */
+#contact .planet   {--pw:46vw;--po:.16;background-image:url(img/earth.jpg);right:-12vw;bottom:-13vw}
+/* every planet is placed to bleed off an edge, so each section has to clip its
+   own: on the route that stops one hanging over the section next door, and on
+   the scrolling page it stops the bleed widening the document and putting a
+   horizontal scrollbar along the bottom */
+.panel{overflow:hidden}
+@media(max-width:760px){.planet{--pw:86vw!important;--po:.12!important}}
+
 /* ============ SECTION ENTRANCES ============
    Every section plays its own arrival, so travelling the route feels like
    turning to a new page rather than scrolling one long one. Everything here is
@@ -682,6 +712,12 @@ body.is-loading .reveal{opacity:0}
 
 /* the head is common ground: each section titles itself the same way, and the
    hairline draws itself out from under the title */
+body.anim-on .panel.is-armed .planet{opacity:0}
+body.anim-on .panel.is-live .planet{animation:planetIn 2.6s var(--ease) .2s both}
+@keyframes planetIn{
+  from{opacity:0;transform:scale(1.07)}
+  to{opacity:var(--po,.13);transform:none}
+}
 body.anim-on .panel.is-armed .sec-head{opacity:0}
 body.anim-on .panel.is-armed .sec-rule{transform:scaleX(0)}
 body.anim-on .panel .sec-rule{transform-origin:left}
@@ -916,8 +952,22 @@ body.anim-on #contact.is-live .contact-mail::after{animation-delay:1.05s}
 
 <main id="top" class="world">
 
+  <!--
+    The planets behind each section are NASA imagery, which is in the public
+    domain under NASA's media guidelines. Each was checked to be credited to
+    NASA and its centres only, with no individual photographer and no Creative
+    Commons licence attached:
+      hero        Jupiter  PIA04866  NASA/JPL/Space Science Institute
+      education   Mars     PIA02653  NASA/JPL/MSSS
+      activities  Saturn   PIA01364  NASA/JPL
+      awards      Uranus   PIA18182  NASA/JPL-Caltech
+      languages   Neptune  PIA02210  NASA/JPL
+      contact     Earth    PIA18033  NASA
+  -->
+
   <!-- ===== HERO ===== -->
   <section class="panel hero">
+  <div class="planet" aria-hidden="true"></div>
   <div class="panel-in">
     <div class="hero-grid">
       <div>
@@ -983,6 +1033,7 @@ body.anim-on #contact.is-live .contact-mail::after{animation-delay:1.05s}
 
   <!-- ===== EDUCATION ===== -->
   <section class="panel" id="education">
+  <div class="planet" aria-hidden="true"></div>
   <div class="panel-in">
     <div class="sec-head reveal">
       <span class="sec-num">01</span>
@@ -1075,6 +1126,7 @@ body.anim-on #contact.is-live .contact-mail::after{animation-delay:1.05s}
 
   <!-- ===== ACTIVITIES ===== -->
   <section class="panel" id="activities">
+  <div class="planet" aria-hidden="true"></div>
   <div class="panel-in">
     <div class="sec-head reveal">
       <span class="sec-num">02</span>
@@ -1158,6 +1210,7 @@ body.anim-on #contact.is-live .contact-mail::after{animation-delay:1.05s}
 
   <!-- ===== AWARDS ===== -->
   <section class="panel" id="awards">
+  <div class="planet" aria-hidden="true"></div>
   <div class="panel-in">
     <div class="sec-head reveal">
       <span class="sec-num">03</span>
@@ -1199,6 +1252,7 @@ body.anim-on #contact.is-live .contact-mail::after{animation-delay:1.05s}
 
   <!-- ===== LANGUAGES ===== -->
   <section class="panel" id="languages">
+  <div class="planet" aria-hidden="true"></div>
   <div class="panel-in">
     <div class="sec-head reveal">
       <span class="sec-num">04</span>
@@ -1236,6 +1290,7 @@ body.anim-on #contact.is-live .contact-mail::after{animation-delay:1.05s}
 
   <!-- ===== CONTACT ===== -->
   <section class="panel" id="contact">
+  <div class="planet" aria-hidden="true"></div>
   <div class="panel-in">
     <div class="contact-card reveal">
       <h2>Let&rsquo;s get in touch</h2>
