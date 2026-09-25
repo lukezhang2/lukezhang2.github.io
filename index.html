@@ -666,33 +666,45 @@ footer{
 body.is-loading .reveal{opacity:0}
 
 /* ============ PLANETS ============
-   A different world behind each section, faint enough to read as texture
-   rather than as a picture. Screen blending drops the black these were
-   photographed against, so only the lit part of the planet is added to the
-   page; a radial mask fades the disc out well before the edge of its own
-   frame, so the photograph never reads as a rectangle. Credits are in the
-   markup above the hero. */
+   A different world behind each section. Screen blending drops the black these
+   were photographed against, so only the lit part of the planet is added to
+   the page, and a radial mask fades the disc out before the edge of its own
+   frame so the photograph never reads as a rectangle. Credits are in the
+   markup above the hero.
+
+   The tint is the part that makes them belong. Draining the colour out only
+   made grey smudges; instead each planet keeps its own luminance and takes its
+   hue from the page's palette, which is what `background-blend-mode: color`
+   does: hue and saturation from the flat layer on top, brightness from the
+   photograph underneath. Every band on Jupiter and every crater on Mars
+   survives, in a colour the rest of the page already uses. That is also why
+   the blur could come most of the way back off: the structure is worth seeing
+   now. */
 .planet{
   position:absolute;z-index:0;pointer-events:none;
   width:var(--pw,46vw);aspect-ratio:var(--pa,1);
-  background-repeat:no-repeat;background-size:contain;background-position:center;
-  mix-blend-mode:screen;opacity:var(--po,.13);
-  /* a photograph at full saturation sat on top of the page rather than in it.
-     Pulling most of the colour out and throwing it slightly out of focus lets
-     the page's own light do the tinting, so each planet reads as part of the
-     background it is lying behind. */
-  filter:saturate(var(--ps,.34)) contrast(.94) blur(1.5px);
-  -webkit-mask-image:radial-gradient(closest-side circle at 50% 50%,#000 30%,rgba(0,0,0,.5) 60%,transparent 84%);
-  mask-image:radial-gradient(closest-side circle at 50% 50%,#000 30%,rgba(0,0,0,.5) 60%,transparent 84%);
+  background-image:linear-gradient(rgb(var(--pc,111,143,255)),rgb(var(--pc,111,143,255))),var(--pi);
+  background-repeat:no-repeat,no-repeat;
+  background-position:center,center;
+  background-size:100% 100%,contain;
+  background-blend-mode:color;
+  mix-blend-mode:screen;opacity:var(--po,.2);
+  filter:contrast(var(--pk,1.2)) blur(.7px);
+  -webkit-mask-image:radial-gradient(closest-side circle at 50% 50%,#000 var(--pmi,48%),rgba(0,0,0,.52) 76%,transparent var(--pmo,95%));
+  mask-image:radial-gradient(closest-side circle at 50% 50%,#000 var(--pmi,48%),rgba(0,0,0,.52) 76%,transparent var(--pmo,95%));
 }
-.hero .planet      {--pw:52vw;--pa:.8;--po:.28;background-image:url(img/jupiter.jpg);left:-15vw;bottom:-16vw}
-#education .planet {--pw:44vw;--po:.30;background-image:url(img/mars.jpg);right:-11vw;top:-12vw}
-#activities .planet{--pw:50vw;--pa:.8;--po:.26;background-image:url(img/saturn.jpg);left:-14vw;bottom:-16vw}
-#awards .planet    {--pw:42vw;--po:.28;background-image:url(img/uranus.jpg);right:-10vw;bottom:-14vw}
-#languages .planet {--pw:44vw;--po:.28;background-image:url(img/neptune.jpg);left:-12vw;top:-12vw}
+/* the hues cycle through the three the page already runs on, so travelling the
+   route moves through blue, violet and teal rather than repeating one note */
+.hero .planet      {--pi:url(img/jupiter.jpg);--pc:111,143,255;--pw:52vw;--pa:.8;--po:.30;left:-15vw;bottom:-16vw}
+#education .planet {--pi:url(img/mars.jpg);   --pc:180,132,255;--pw:44vw;--po:.30;right:-11vw;top:-12vw}
+/* Saturn's rings run past the disc, so its mask has to open wider or the best
+   part of the photograph is the part that gets cropped away */
+#activities .planet{--pi:url(img/saturn.jpg); --pc:86,214,190;--pw:54vw;--pa:.8;--po:.26;--pmi:62%;--pmo:96%;left:-11vw;bottom:-13vw}
+#awards .planet    {--pi:url(img/uranus.jpg); --pc:111,143,255;--pw:42vw;--po:.28;right:-10vw;bottom:-14vw}
+#languages .planet {--pi:url(img/neptune.jpg);--pc:180,132,255;--pw:44vw;--po:.28;left:-12vw;top:-12vw}
 /* the closing card covers the middle of its slide, so Earth sits off the
    corner where it can actually be seen rather than behind it */
-#contact .planet   {--pw:46vw;--po:.22;background-image:url(img/earth.jpg);right:-12vw;bottom:-13vw}
+#contact .planet   {--pi:url(img/earth.jpg);  --pc:86,214,190;--pw:46vw;--po:.24;right:-12vw;bottom:-13vw}
 /* every planet is placed to bleed off an edge, so each section has to clip its
    own: on the route that stops one hanging over the section next door, and on
    the scrolling page it stops the bleed widening the document and putting a
