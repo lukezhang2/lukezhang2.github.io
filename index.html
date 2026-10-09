@@ -440,6 +440,52 @@ body.path footer{margin-top:44px}
   box-shadow:0 0 7px rgba(86,224,200,.9);flex:none;
 }
 
+/* ============ PROJECTS ============
+   Text on the left, the app itself on the right. The screenshots are the
+   argument here, so they are given real size and fanned rather than lined up:
+   three phones overlapping slightly, the middle one standing proud, which
+   reads as one app rather than three unrelated pictures. */
+.proj{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.18fr);gap:clamp(20px,2.6vw,38px);align-items:center}
+@media(max-width:980px){.proj{grid-template-columns:1fr;gap:26px}}
+.proj-lede{font-size:clamp(1rem,1.5vw,1.18rem);color:var(--text);margin-bottom:18px;max-width:46ch}
+.stack{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:20px}
+.stack-chip{
+  font-family:var(--font-mono);font-size:.68rem;letter-spacing:.04em;
+  padding:5px 11px;border-radius:8px;
+  color:rgba(var(--c,111,143,255),.92);
+  border:1px solid rgba(var(--c,111,143,255),.26);
+  background:rgba(var(--c,111,143,255),.06);
+  transition:.25s var(--ease);
+}
+.stack-chip:hover{border-color:rgba(var(--c,111,143,255),.5);background:rgba(var(--c,111,143,255),.12)}
+
+.shots{display:flex;justify-content:center;align-items:center;gap:0;width:100%}
+/* sized off the column rather than the viewport height: width is what actually
+   runs out here, and a phone that will not shrink drags the whole track with it */
+.shot{
+  position:relative;flex:none;width:var(--sw,42%);
+  border-radius:16px;overflow:hidden;
+  border:1px solid rgba(255,255,255,.12);
+  background:#06070c;
+  box-shadow:0 18px 44px -20px rgba(0,0,0,.95),var(--hi);
+  transition:transform .45s var(--ease),border-color .45s ease;
+}
+.shot img{display:block;width:100%;height:auto}
+/* the outer two tuck behind and tilt away from the middle. --fan is how far
+   they overlap, and the entrance keyframes read the same value so the run
+   lands exactly on the resting pose instead of snapping at the end. */
+.shots{--fan:24%}
+.shot:nth-child(1){transform:translateX(var(--fan)) rotate(-5deg) scale(.9);z-index:1}
+.shot:nth-child(2){z-index:3}
+.shot:nth-child(3){transform:translateX(calc(var(--fan) * -1)) rotate(5deg) scale(.9);z-index:2}
+.shots:hover .shot:nth-child(1){transform:translateX(10%) rotate(-8deg) scale(.94)}
+.shots:hover .shot:nth-child(3){transform:translateX(-10%) rotate(8deg) scale(.94)}
+.shots:hover .shot:nth-child(2){transform:translateY(-6px)}
+.shots:hover .shot{border-color:rgba(255,255,255,.2)}
+#bingl{--c:180,132,255}
+#poker8{--c:86,214,190}
+@media(max-width:980px){.shot{--sw:31%}.shots{--fan:14%}}
+
 /* ============ EDUCATION ============ */
 /* The two schools sit side by side and the coursework spans the full width
    beneath them. Stacking coursework in a narrow column made the tags wrap five
@@ -695,6 +741,8 @@ body.is-loading .reveal{opacity:0}
 }
 /* the hues cycle through the three the page already runs on, so travelling the
    route moves through blue, violet and teal rather than repeating one note */
+#bingl .planet     {--pi:url(img/venus.jpg);   --pc:180,132,255;--pw:44vw;--po:.26;right:-11vw;top:-12vw}
+#poker8 .planet    {--pi:url(img/mercury.jpg); --pc:86,214,190;--pw:42vw;--po:.26;left:-11vw;bottom:-13vw}
 .hero .planet      {--pi:url(img/jupiter.jpg);--pc:111,143,255;--pw:52vw;--pa:.8;--po:.30;left:-15vw;bottom:-16vw}
 #education .planet {--pi:url(img/mars.jpg);   --pc:180,132,255;--pw:44vw;--po:.30;right:-11vw;top:-12vw}
 /* Saturn's rings run past the disc, so its mask has to open wider or the best
@@ -760,6 +808,41 @@ body.anim-on .hero.is-live .scroll-cue{animation:fadeIn .7s ease 1.05s both}
 @keyframes heroRise{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
 @keyframes orbIris{from{opacity:0;transform:scale(.74) rotate(-14deg)}to{opacity:1;transform:none}}
 @keyframes glowUp{from{opacity:0;transform:scale(.5)}to{opacity:1;transform:none}}
+
+/* ---- projects: the column writes itself out, then the phones land ---- */
+body.anim-on #bingl.is-armed .proj-lede,  body.anim-on #poker8.is-armed .proj-lede,
+body.anim-on #bingl.is-armed .stack-chip, body.anim-on #poker8.is-armed .stack-chip,
+body.anim-on #bingl.is-armed .bullets li, body.anim-on #poker8.is-armed .bullets li,
+body.anim-on #bingl.is-armed .shot,       body.anim-on #poker8.is-armed .shot{opacity:0}
+body.anim-on #bingl.is-live .proj-lede,body.anim-on #poker8.is-live .proj-lede{
+  animation:riseIn .6s var(--ease) .1s both;
+}
+body.anim-on #bingl.is-live .stack-chip,body.anim-on #poker8.is-live .stack-chip{
+  animation:tagIn .4s var(--ease) both;animation-delay:calc(.26s + var(--i,0)*.04s);
+}
+body.anim-on #bingl.is-live .bullets li,body.anim-on #poker8.is-live .bullets li{
+  animation:riseIn .5s var(--ease) both;animation-delay:calc(.48s + var(--j,0)*.1s);
+}
+/* each phone keeps the tilt it rests at, so the entrance has to land on that
+   rather than on none, or they snap straight at the end of the run */
+body.anim-on #bingl.is-live .shot:nth-child(1),body.anim-on #poker8.is-live .shot:nth-child(1){
+  animation:shotL .8s cubic-bezier(.22,1,.36,1) .34s both;
+}
+body.anim-on #bingl.is-live .shot:nth-child(2),body.anim-on #poker8.is-live .shot:nth-child(2){
+  animation:shotM .8s cubic-bezier(.22,1,.36,1) .22s both;
+}
+body.anim-on #bingl.is-live .shot:nth-child(3),body.anim-on #poker8.is-live .shot:nth-child(3){
+  animation:shotR .8s cubic-bezier(.22,1,.36,1) .46s both;
+}
+@keyframes shotM{from{opacity:0;transform:translateY(46px)}to{opacity:1;transform:none}}
+@keyframes shotL{
+  from{opacity:0;transform:translateX(calc(var(--fan) + 30%)) rotate(-16deg) scale(.82)}
+  to{opacity:1;transform:translateX(var(--fan)) rotate(-5deg) scale(.9)}
+}
+@keyframes shotR{
+  from{opacity:0;transform:translateX(calc(var(--fan) * -1 - 30%)) rotate(16deg) scale(.82)}
+  to{opacity:1;transform:translateX(calc(var(--fan) * -1)) rotate(5deg) scale(.9)}
+}
 
 /* ---- 01 education: a reading light runs across the transcript ---- */
 body.anim-on #education.is-armed .edu-schools > .card,
@@ -961,6 +1044,8 @@ body.anim-on #contact.is-live .contact-mail::after{animation-delay:1.05s}
 <nav class="nav" id="nav">
   <a href="#top" class="brand"><span class="brand-mark">LZ</span> Luke Zhang</a>
   <div class="nav-links">
+    <a href="#bingl">Bingl</a>
+    <a href="#poker8">Poker8</a>
     <a href="#education">Education</a>
     <a href="#activities">Activities</a>
     <a href="#awards">Awards</a>
@@ -977,6 +1062,10 @@ body.anim-on #contact.is-live .contact-mail::after{animation-delay:1.05s}
     NASA and its centres only, with no individual photographer and no Creative
     Commons licence attached:
       hero        Jupiter  PIA04866  NASA/JPL/Space Science Institute
+      bingl       Venus    PIA00270  NASA/JPL
+      poker8      Mercury  PIA15162  NASA/Johns Hopkins University Applied
+                                     Physics Laboratory/Carnegie Institution
+                                     of Washington
       education   Mars     PIA02653  NASA/JPL/MSSS
       activities  Saturn   PIA01364  NASA/JPL
       awards      Uranus   PIA18182  NASA/JPL-Caltech
@@ -1050,12 +1139,89 @@ body.anim-on #contact.is-live .contact-mail::after{animation-delay:1.05s}
     <div class="scroll-cue" id="scrollCue" aria-hidden="true">Scroll<svg viewBox="0 0 17 10"><path d="M1.4 1.4 8.5 8.5l7.1-7.1"/></svg></div>  </div>
   </section>
 
+  <!-- ===== PROJECTS ===== -->
+  <section class="panel" id="bingl">
+  <div class="planet" aria-hidden="true"></div>
+  <div class="panel-in">
+    <div class="sec-head reveal">
+      <span class="sec-num">01</span>
+      <h2 class="sec-title">Bingl</h2>
+      <span class="sec-rule"></span>
+      <div class="sec-note">Personal project &middot; iOS and iMessage</div>
+    </div>
+
+    <div class="proj">
+      <div class="proj-text">
+        <p class="proj-lede reveal">Multiplayer party game app playable through iMessages and the standalone app.</p>
+        <div class="stack reveal" style="--d:.06s">
+          <span class="stack-chip">SwiftUI</span>
+          <span class="stack-chip">Swift</span>
+          <span class="stack-chip">Go</span>
+          <span class="stack-chip">WebSockets</span>
+          <span class="stack-chip">PostgreSQL</span>
+          <span class="stack-chip">Supabase</span>
+          <span class="stack-chip">Fly.io</span>
+          <span class="stack-chip">SceneKit</span>
+          <span class="stack-chip">StoreKit 2</span>
+        </div>
+        <ul class="bullets reveal" style="--d:.12s">
+          <li>Developed an iOS and iMessage multiplayer gaming platform featuring seven mini games, ranging from asynchronous word games to a SceneKit-based laser-tag arena.</li>
+          <li>Built and deployed a full-stack architecture with a SwiftUI client, Go WebSocket server on Fly.io, and Supabase/PostgreSQL backend for managing matches, friends, and rewards.</li>
+          <li>Implemented Sign in with Apple, friend codes, online presence, friend challenges, and a virtual currency economy with coins, gems, and StoreKit 2 in-app purchases.</li>
+        </ul>
+      </div>
+
+      <div class="shots reveal" style="--d:.1s">
+        <figure class="shot"><img src="img/shots/bingl-1.jpg" alt="Bingl game picker inside an iMessage conversation" loading="lazy" decoding="async" width="379" height="820"></figure>
+        <figure class="shot"><img src="img/shots/bingl-2.jpg" alt="Bingl match history showing six mini games and their records" loading="lazy" decoding="async" width="379" height="820"></figure>
+        <figure class="shot"><img src="img/shots/bingl-3.jpg" alt="Bingl player profile with friend code and win record" loading="lazy" decoding="async" width="379" height="820"></figure>
+      </div>
+    </div>  </div>
+  </section>
+
+  <section class="panel" id="poker8">
+  <div class="planet" aria-hidden="true"></div>
+  <div class="panel-in">
+    <div class="sec-head reveal">
+      <span class="sec-num">02</span>
+      <h2 class="sec-title">Poker8</h2>
+      <span class="sec-rule"></span>
+      <div class="sec-note">Personal project &middot; iOS</div>
+    </div>
+
+    <div class="proj">
+      <div class="proj-text">
+        <p class="proj-lede reveal">Online poker app for hosting and playing private or public games.</p>
+        <div class="stack reveal" style="--d:.06s">
+          <span class="stack-chip">SwiftUI</span>
+          <span class="stack-chip">Swift</span>
+          <span class="stack-chip">Go</span>
+          <span class="stack-chip">WebSockets</span>
+          <span class="stack-chip">PostgreSQL</span>
+          <span class="stack-chip">Supabase</span>
+          <span class="stack-chip">Fly.io</span>
+        </div>
+        <ul class="bullets reveal" style="--d:.12s">
+          <li>Built a live multiplayer poker app for iPhone where players can join cash games and tournaments.</li>
+          <li>Designed the full poker rules so every hand is dealt fairly and scored correctly, including split pots and all-in runouts, and verified the logic with more than 130 automated tests.</li>
+          <li>Launched real tables players can host and join, including private invite-only games, host controls to approve or remove players, turn timers, and tournaments that automatically move players between tables down to a final table.</li>
+        </ul>
+      </div>
+
+      <div class="shots reveal" style="--d:.1s">
+        <figure class="shot"><img src="img/shots/poker8-1.jpg" alt="Poker8 lobby with hosting and invite code entry" loading="lazy" decoding="async" width="379" height="820"></figure>
+        <figure class="shot"><img src="img/shots/poker8-2.jpg" alt="Poker8 table hosting options including blinds and tournament settings" loading="lazy" decoding="async" width="379" height="820"></figure>
+        <figure class="shot"><img src="img/shots/poker8-3.jpg" alt="Poker8 live table waiting for players to sit down" loading="lazy" decoding="async" width="379" height="820"></figure>
+      </div>
+    </div>  </div>
+  </section>
+
   <!-- ===== EDUCATION ===== -->
   <section class="panel" id="education">
   <div class="planet" aria-hidden="true"></div>
   <div class="panel-in">
     <div class="sec-head reveal">
-      <span class="sec-num">01</span>
+      <span class="sec-num">03</span>
       <h2 class="sec-title">Education</h2>
       <span class="sec-rule"></span>
     </div>
@@ -1148,7 +1314,7 @@ body.anim-on #contact.is-live .contact-mail::after{animation-delay:1.05s}
   <div class="planet" aria-hidden="true"></div>
   <div class="panel-in">
     <div class="sec-head reveal">
-      <span class="sec-num">02</span>
+      <span class="sec-num">04</span>
       <h2 class="sec-title">Activities &amp; Leadership</h2>
       <span class="sec-rule"></span>
       <div class="sec-note">Mount Sinai and Long Island, 2022 to 2026</div>
@@ -1232,7 +1398,7 @@ body.anim-on #contact.is-live .contact-mail::after{animation-delay:1.05s}
   <div class="planet" aria-hidden="true"></div>
   <div class="panel-in">
     <div class="sec-head reveal">
-      <span class="sec-num">03</span>
+      <span class="sec-num">05</span>
       <h2 class="sec-title">Awards &amp; Honors</h2>
       <span class="sec-rule"></span>
     </div>
@@ -1274,7 +1440,7 @@ body.anim-on #contact.is-live .contact-mail::after{animation-delay:1.05s}
   <div class="planet" aria-hidden="true"></div>
   <div class="panel-in">
     <div class="sec-head reveal">
-      <span class="sec-num">04</span>
+      <span class="sec-num">06</span>
       <h2 class="sec-title">Programming Languages</h2>
       <span class="sec-rule"></span>
     </div>
@@ -1418,6 +1584,10 @@ body.anim-on #contact.is-live .contact-mail::after{animation-delay:1.05s}
 
   function stampAnimVars(){
     stamp('.edu-schools > .card', '--i');
+    document.querySelectorAll('.proj').forEach(function(pr){
+      stamp('.stack-chip', '--i', pr);
+      stamp('.bullets li', '--j', pr);
+    });
     stamp('.award', '--i');
     stamp('#languages .skills > .card', '--i');
     var groups = stamp('.course-group', '--g');
@@ -2120,7 +2290,7 @@ body.anim-on #contact.is-live .contact-mail::after{animation-delay:1.05s}
 
   /* ---------- active nav link ---------- */
   var links = Array.prototype.slice.call(document.querySelectorAll('.nav-links a'));
-  var ids = ['education','activities','awards','languages','contact'];
+  var ids = ['bingl','poker8','education','activities','awards','languages','contact'];
 
   function setActive(idx){
     if (!links) return;   /* onScroll runs once before this section initialises */
