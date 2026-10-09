@@ -741,24 +741,24 @@ body.is-loading .reveal{opacity:0}
 }
 /* the hues cycle through the three the page already runs on, so travelling the
    route moves through blue, violet and teal rather than repeating one note */
-#bingl .planet     {--pi:url(img/venus.jpg);   --pc:180,132,255;--pw:44vw;--po:.26;right:-11vw;top:-12vw}
-#poker8 .planet    {--pi:url(img/mercury.jpg); --pc:86,214,190;--pw:42vw;--po:.26;left:-11vw;bottom:-13vw}
-.hero .planet      {--pi:url(img/jupiter.jpg);--pc:111,143,255;--pw:52vw;--pa:.8;--po:.30;left:-15vw;bottom:-16vw}
-#education .planet {--pi:url(img/mars.jpg);   --pc:180,132,255;--pw:44vw;--po:.30;right:-11vw;top:-12vw}
+#bingl .planet     {--pi:url(img/venus.jpg);   --pc:180,132,255;--pw:18vw;--po:.44;right:-3vw;top:-3vh}
+#poker8 .planet    {--pi:url(img/mercury.jpg); --pc:86,214,190;--pw:18vw;--po:.44;left:-3vw;bottom:-3vh}
+.hero .planet      {--pi:url(img/jupiter.jpg);--pc:111,143,255;--pw:21vw;--pa:.8;--po:.46;left:-3vw;bottom:-3vh}
+#education .planet {--pi:url(img/mars.jpg);   --pc:180,132,255;--pw:19vw;--po:.46;right:-3vw;top:-3vh}
 /* Saturn's rings run past the disc, so its mask has to open wider or the best
    part of the photograph is the part that gets cropped away */
-#activities .planet{--pi:url(img/saturn.jpg); --pc:86,214,190;--pw:54vw;--pa:.8;--po:.26;--pmi:62%;--pmo:96%;left:-11vw;bottom:-13vw}
-#awards .planet    {--pi:url(img/uranus.jpg); --pc:111,143,255;--pw:42vw;--po:.28;right:-10vw;bottom:-14vw}
-#languages .planet {--pi:url(img/neptune.jpg);--pc:180,132,255;--pw:44vw;--po:.28;left:-12vw;top:-12vw}
+#activities .planet{--pi:url(img/saturn.jpg); --pc:86,214,190;--pw:24vw;--pa:.8;--po:.42;--pmi:62%;--pmo:96%;left:-3vw;bottom:-4vh}
+#awards .planet    {--pi:url(img/uranus.jpg); --pc:111,143,255;--pw:18vw;--po:.44;right:-3vw;bottom:-3vh}
+#languages .planet {--pi:url(img/neptune.jpg);--pc:180,132,255;--pw:19vw;--po:.44;left:-3vw;top:-3vh}
 /* the closing card covers the middle of its slide, so Earth sits off the
    corner where it can actually be seen rather than behind it */
-#contact .planet   {--pi:url(img/earth.jpg);  --pc:86,214,190;--pw:46vw;--po:.24;right:-12vw;bottom:-13vw}
+#contact .planet   {--pi:url(img/earth.jpg);  --pc:86,214,190;--pw:20vw;--po:.38;right:-3vw;bottom:-3vh}
 /* every planet is placed to bleed off an edge, so each section has to clip its
    own: on the route that stops one hanging over the section next door, and on
    the scrolling page it stops the bleed widening the document and putting a
    horizontal scrollbar along the bottom */
 .panel{overflow:hidden}
-@media(max-width:760px){.planet{--pw:86vw!important;--po:.20!important}}
+@media(max-width:760px){.planet{--pw:46vw!important;--po:.34!important;--orb:26vw!important}}
 
 /* ============ SECTION ENTRANCES ============
    Every section plays its own arrival, so travelling the route feels like
@@ -778,12 +778,43 @@ body.is-loading .reveal{opacity:0}
 /* the head is common ground: each section titles itself the same way, and the
    hairline draws itself out from under the title */
 body.anim-on .panel.is-armed .planet{opacity:0}
-/* it turns as it surfaces, decelerating into place, and takes its time: it is
-   the slowest thing on any slide by a distance */
-body.anim-on .panel.is-live .planet{animation:planetIn 3.6s cubic-bezier(.16,.8,.28,1) .15s both}
-@keyframes planetIn{
-  from{opacity:0;transform:rotate(var(--pr,-24deg)) scale(1.12)}
-  to{opacity:var(--po,.13);transform:rotate(0deg) scale(1)}
+/* It swings in on one full orbit, spiralling inward and shrinking the whole
+   way, and comes to rest small at the edge of the slide. The trick is the
+   sandwich: rotate, step out along the radius, then rotate back by the same
+   amount. The outer pair cancel, so the planet keeps its own orientation while
+   its centre travels a circle, which is what makes it read as an orbit rather
+   than a spinning picture. CSS interpolates the angle angularly and the radius
+   linearly, so four quarter turns are enough to describe a true spiral.
+
+   --orb is how far out it starts and --os how much bigger, both relative to
+   where it ends, so a planet's resting size is the only number that sets its
+   scale. It stays dimmer while it is crossing the slide at full size, and only
+   comes up to its resting level once it is small and out of the way of the
+   text. It is the slowest thing on any slide by a distance. */
+body.anim-on .panel.is-live .planet{animation:planetOrbit 4.4s cubic-bezier(.2,.62,.3,1) .1s both}
+@keyframes planetOrbit{
+  0%{
+    opacity:0;
+    transform:rotate(0deg) translateX(var(--orb,36vw)) rotate(0deg) scale(var(--os,2.6));
+  }
+  12%{opacity:calc(var(--po,.4) * .55)}
+  25%{
+    transform:rotate(90deg) translateX(calc(var(--orb,36vw) * .84)) rotate(-90deg)
+              scale(calc(var(--os,2.6) * .8));
+  }
+  50%{
+    transform:rotate(180deg) translateX(calc(var(--orb,36vw) * .6)) rotate(-180deg)
+              scale(calc(var(--os,2.6) * .58));
+  }
+  70%{opacity:calc(var(--po,.4) * .72)}
+  75%{
+    transform:rotate(270deg) translateX(calc(var(--orb,36vw) * .32)) rotate(-270deg)
+              scale(calc(var(--os,2.6) * .47));
+  }
+  100%{
+    opacity:var(--po,.4);
+    transform:rotate(360deg) translateX(0) rotate(-360deg) scale(1);
+  }
 }
 body.anim-on .panel.is-armed .sec-head{opacity:0}
 body.anim-on .panel.is-armed .sec-rule{transform:scaleX(0)}
